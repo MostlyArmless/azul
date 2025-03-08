@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { PlayerBoard as PlayerBoardType, Tile, TileType } from "../types";
+import resetIcon from "../assets/reset.svg";
 
 interface PlayerBoardProps {
   board: PlayerBoardType;
@@ -8,6 +9,7 @@ interface PlayerBoardProps {
   onReadyZoneRowClick: (rowIndex: number) => void;
   onFloorClick: () => void;
   onHoldingAreaTileClick: (tile: Tile) => void;
+  onResetTurn: () => void;
   selectedTile: Tile | null;
   selectedColor: TileType | null;
   onEndTurn: () => void;
@@ -22,12 +24,15 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
   onReadyZoneRowClick,
   onFloorClick,
   onHoldingAreaTileClick,
+  onResetTurn,
   selectedTile,
   selectedColor,
   onEndTurn,
   canEndTurn,
   hasFirstPlayerMarker = false,
 }) => {
+  const [isResetHovered, setIsResetHovered] = useState(false);
+
   return (
     <div
       className="player-board"
@@ -90,6 +95,70 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
               }}
             />
           ))}
+
+          {/* Reset Button */}
+          {isActive && (
+            <button
+              onClick={onResetTurn}
+              disabled={board.holdingArea.every((tile) => tile !== null)}
+              onMouseEnter={() => setIsResetHovered(true)}
+              onMouseLeave={() => setIsResetHovered(false)}
+              style={{
+                position: "absolute",
+                top: "5px",
+                right: "5px",
+                padding: "4px",
+                cursor: board.holdingArea.some((tile) => tile === null)
+                  ? "pointer"
+                  : "not-allowed",
+                opacity: board.holdingArea.some((tile) => tile === null)
+                  ? 1
+                  : 0.3,
+                backgroundColor:
+                  isResetHovered &&
+                  board.holdingArea.some((tile) => tile === null)
+                    ? "#f0f0f0"
+                    : "white",
+                border: "1px solid #999",
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "24px",
+                height: "24px",
+                transition: "all 0.2s ease",
+                boxShadow:
+                  isResetHovered &&
+                  board.holdingArea.some((tile) => tile === null)
+                    ? "0 2px 4px rgba(0,0,0,0.2)"
+                    : "0 1px 2px rgba(0,0,0,0.1)",
+                transform:
+                  isResetHovered &&
+                  board.holdingArea.some((tile) => tile === null)
+                    ? "scale(1.1)"
+                    : "scale(1)",
+                zIndex: 2,
+              }}
+            >
+              <img
+                src={resetIcon}
+                alt="Reset turn"
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  transition: "transform 0.2s ease",
+                  transform:
+                    isResetHovered &&
+                    board.holdingArea.some((tile) => tile === null)
+                      ? "rotate(-180deg)"
+                      : "rotate(0)",
+                  opacity: board.holdingArea.some((tile) => tile === null)
+                    ? 1
+                    : 0.3,
+                }}
+              />
+            </button>
+          )}
         </div>
       )}
 
@@ -98,43 +167,45 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         style={{ display: "flex", gap: "40px", justifyContent: "center" }}
       >
         {/* Ready Zone */}
-        <div
-          className="ready-zone"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "2px",
-          }}
-        >
-          {board.readyZone.map((row, rowIndex) => (
-            <div
-              key={rowIndex}
-              onClick={() => isActive && onReadyZoneRowClick(rowIndex)}
-              style={{
-                display: "flex",
-                marginLeft: `${(4 - rowIndex) * 40}px`,
-                height: "40px",
-                gap: "2px",
-                cursor: isActive ? "pointer" : "default",
-              }}
-            >
-              {Array(rowIndex + 1)
-                .fill(null)
-                .map((_, cellIndex) => (
-                  <div
-                    key={cellIndex}
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      border: "1px solid #999",
-                      backgroundColor: row[cellIndex]?.type
-                        ? `var(--${row[cellIndex]?.type})`
-                        : "var(--empty)",
-                    }}
-                  />
-                ))}
-            </div>
-          ))}
+        <div style={{ position: "relative" }}>
+          <div
+            className="ready-zone"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "2px",
+            }}
+          >
+            {board.readyZone.map((row, rowIndex) => (
+              <div
+                key={rowIndex}
+                onClick={() => isActive && onReadyZoneRowClick(rowIndex)}
+                style={{
+                  display: "flex",
+                  marginLeft: `${(4 - rowIndex) * 40}px`,
+                  height: "40px",
+                  gap: "2px",
+                  cursor: isActive ? "pointer" : "default",
+                }}
+              >
+                {Array(rowIndex + 1)
+                  .fill(null)
+                  .map((_, cellIndex) => (
+                    <div
+                      key={cellIndex}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        border: "1px solid #999",
+                        backgroundColor: row[cellIndex]?.type
+                          ? `var(--${row[cellIndex]?.type})`
+                          : "var(--empty)",
+                      }}
+                    />
+                  ))}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Wall */}

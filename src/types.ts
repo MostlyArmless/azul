@@ -23,4 +23,5 @@ export interface GameState {
   selectedColor: TileType | null;
   firstPlayerMarkerIndex: number;
   hasFirstPlayerBeenMoved: boolean;
+  placedTilesThisTurn: { type: TileType; location: 'readyZone' | 'floor'; rowIndex?: number; position: number }[];
 } 

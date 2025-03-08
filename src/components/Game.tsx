@@ -53,6 +53,7 @@ const createInitialGameState = (): GameState => {
     selectedColor: null,
     firstPlayerMarkerIndex: 0,
     hasFirstPlayerBeenMoved: false,
+    placedTilesThisTurn: [],
   };
 };
 
@@ -115,6 +116,7 @@ const Game: React.FC = () => {
         draft.selectedTile = null;
         draft.selectedColor = null;
         draft.hasPlacedTile = false;
+        draft.placedTilesThisTurn = [];
         draft.currentPlayer = (draft.currentPlayer + 1) % 2;
 
         // If all factories are empty, refill them from the bag
@@ -185,6 +187,14 @@ const Game: React.FC = () => {
         // Place the selected tile
         row[emptySpotIndex] = draft.selectedTile;
 
+        // Track the placed tile
+        draft.placedTilesThisTurn.push({
+          type: draft.selectedTile!.type,
+          location: "readyZone",
+          rowIndex,
+          position: emptySpotIndex,
+        });
+
         // Remove the placed tile from holding area
         const tileIndex = playerBoard.holdingArea.findIndex(
           (t) => t && t.type === draft.selectedColor
@@ -226,6 +236,13 @@ const Game: React.FC = () => {
 
         // Place the selected tile
         floor[emptySpotIndex] = draft.selectedTile;
+
+        // Track the placed tile
+        draft.placedTilesThisTurn.push({
+          type: draft.selectedTile!.type,
+          location: "floor",
+          position: emptySpotIndex,
+        });
 
         // Remove the placed tile from holding area
         const tileIndex = playerBoard.holdingArea.findIndex(
@@ -273,6 +290,61 @@ const Game: React.FC = () => {
           draft.firstPlayerMarkerIndex = draft.currentPlayer;
           draft.hasFirstPlayerBeenMoved = true;
         }
+      })
+    );
+  };
+
+  const handleResetTurn = (playerIndex: number) => {
+    if (
+      playerIndex !== gameState.currentPlayer ||
+      gameState.placedTilesThisTurn.length === 0
+    )
+      return;
+
+    setGameState(
+      produce((draft) => {
+        const playerBoard = draft.players[playerIndex];
+
+        // Create a map to count how many tiles of each type we need to restore
+        const tilesToRestore = draft.placedTilesThisTurn.reduce(
+          (acc, placement) => {
+            acc[placement.type] = (acc[placement.type] || 0) + 1;
+            return acc;
+          },
+          {} as Record<TileType, number>
+        );
+
+        // Remove tiles from their placed locations
+        draft.placedTilesThisTurn.forEach((placement) => {
+          if (placement.location === "readyZone") {
+            playerBoard.readyZone[placement.rowIndex!][placement.position] =
+              null;
+          } else {
+            playerBoard.floor[placement.position] = null;
+          }
+        });
+
+        // Find empty spots in holding area
+        const emptySpots = playerBoard.holdingArea
+          .map((_, index) => index)
+          .filter((index) => !playerBoard.holdingArea[index]);
+
+        // Restore tiles to holding area
+        let spotIndex = 0;
+        Object.entries(tilesToRestore).forEach(([type, count]) => {
+          for (let i = 0; i < count && spotIndex < emptySpots.length; i++) {
+            playerBoard.holdingArea[emptySpots[spotIndex]] = {
+              type: type as TileType,
+            };
+            spotIndex++;
+          }
+        });
+
+        // Reset turn state
+        draft.hasPlacedTile = false;
+        draft.selectedTile = null;
+        draft.selectedColor = null;
+        draft.placedTilesThisTurn = [];
       })
     );
   };
@@ -409,6 +481,7 @@ const Game: React.FC = () => {
             onHoldingAreaTileClick={(tile) =>
               handleHoldingAreaTileClick(index, tile)
             }
+            onResetTurn={() => handleResetTurn(index)}
             selectedTile={gameState.selectedTile}
             selectedColor={gameState.selectedColor}
             onEndTurn={handleEndTurn}
