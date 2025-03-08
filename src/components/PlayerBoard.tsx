@@ -5,6 +5,7 @@ import {
   TileType,
   WALL_PATTERN,
 } from "../types";
+import { COLORS } from "../constants";
 import resetIcon from "../assets/reset.svg";
 
 interface PlayerBoardProps {
@@ -47,7 +48,9 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
       style={{
         margin: "20px",
         padding: "20px",
-        border: `2px solid ${isActive ? "#2ecc71" : "#ccc"}`,
+        border: `2px solid ${
+          isActive ? COLORS.ACTIVE_BORDER : COLORS.INACTIVE_BORDER
+        }`,
         minWidth: "500px",
         opacity: isActive ? 1 : 0.7,
         position: "relative",
@@ -68,8 +71,10 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
             right: "10px",
             padding: "4px",
             cursor: "pointer",
-            backgroundColor: isTurnResetHovered ? "#f0f0f0" : "white",
-            border: "1px solid #999",
+            backgroundColor: isTurnResetHovered
+              ? COLORS.BUTTON_HOVER
+              : COLORS.BUTTON_BG,
+            border: `1px solid ${COLORS.BORDER}`,
             borderRadius: "8px",
             display: "flex",
             alignItems: "center",
@@ -134,12 +139,16 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
               style={{
                 width: "40px",
                 height: "40px",
-                backgroundColor: tile ? `var(--${tile.type})` : "#f5f5f5",
-                border: tile ? "2px solid #666" : "2px dashed #999",
+                backgroundColor: tile
+                  ? `var(--${tile.type})`
+                  : COLORS.EMPTY_SPACE,
+                border: tile
+                  ? `2px solid ${COLORS.DARK_BORDER}`
+                  : `2px dashed ${COLORS.BORDER}`,
                 cursor: tile && isActive ? "pointer" : "default",
                 outline:
                   tile && selectedColor && tile.type === selectedColor
-                    ? "3px solid #2ecc71"
+                    ? `3px solid ${COLORS.ACTIVE_BORDER}`
                     : "none",
               }}
             />
@@ -166,9 +175,9 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                 backgroundColor:
                   isResetHovered &&
                   board.holdingArea.some((tile) => tile === null)
-                    ? "#f0f0f0"
-                    : "white",
-                border: "1px solid #999",
+                    ? COLORS.BUTTON_HOVER
+                    : COLORS.BUTTON_BG,
+                border: `1px solid ${COLORS.BORDER}`,
                 borderRadius: "8px",
                 display: "flex",
                 alignItems: "center",
@@ -248,11 +257,11 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                         width: "40px",
                         height: "40px",
                         border: row[cellIndex]?.type
-                          ? "2px solid #666"
-                          : "2px dashed #999",
+                          ? `2px solid ${COLORS.DARK_BORDER}`
+                          : `2px dashed ${COLORS.BORDER}`,
                         backgroundColor: row[cellIndex]?.type
                           ? `var(--${row[cellIndex]?.type})`
-                          : "#f5f5f5",
+                          : COLORS.EMPTY_SPACE,
                         marginLeft: "-2px", // Compensate for border overlap
                       }}
                     />
@@ -281,8 +290,10 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                   style={{
                     width: "40px",
                     height: "40px",
-                    border: "1px solid #999",
-                    backgroundColor: cell ? `var(--${cell.type})` : "#f5f5f5",
+                    border: `1px solid ${COLORS.BORDER}`,
+                    backgroundColor: cell
+                      ? `var(--${cell.type})`
+                      : COLORS.EMPTY_SPACE,
                     position: "relative",
                   }}
                 >
@@ -314,12 +325,12 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           display: "flex",
           gap: "2px",
           marginTop: "20px",
-          border: "1px solid #999",
+          border: `1px solid ${COLORS.BORDER}`,
           padding: "5px",
           justifyContent: "center",
           cursor: isActive ? "pointer" : "default",
           position: "relative",
-          backgroundColor: "white",
+          backgroundColor: COLORS.BUTTON_BG,
         }}
       >
         {board.floor.map((tile, index) => {
@@ -330,8 +341,12 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
               style={{
                 width: "40px",
                 height: "40px",
-                border: tile?.type ? "1px solid #999" : "1px dashed #999",
-                backgroundColor: tile?.type ? `var(--${tile.type})` : "#f5f5f5",
+                border: tile?.type
+                  ? `1px solid ${COLORS.BORDER}`
+                  : `1px dashed ${COLORS.BORDER}`,
+                backgroundColor: tile?.type
+                  ? `var(--${tile.type})`
+                  : COLORS.EMPTY_SPACE,
                 position: "relative",
               }}
             >
@@ -344,7 +359,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                     transform: "translate(-50%, -50%)",
                     opacity: 0.5,
                     fontSize: "14px",
-                    color: "#666",
+                    color: COLORS.TEXT,
                   }}
                 >
                   {penalties[index]}
@@ -360,7 +375,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           textAlign: "center",
           marginTop: "10px",
           fontSize: "1.2em",
-          color: "#2c3e50",
+          color: COLORS.TEXT,
         }}
       >
         Score: {board.score}
@@ -383,8 +398,8 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
             style={{
               width: "40px",
               height: "40px",
-              backgroundColor: "#333",
-              border: "1px solid #999",
+              backgroundColor: COLORS.FIRST_PLAYER_BG,
+              border: `1px solid ${COLORS.BORDER}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

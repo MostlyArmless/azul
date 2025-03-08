@@ -9,6 +9,7 @@ import {
   GamePhase,
   WALL_PATTERN,
 } from "../types";
+import { COLORS } from "../constants";
 import PlayerBoard from "./PlayerBoard";
 
 const INITIAL_TILES_PER_FACTORY = 4;
@@ -797,8 +798,8 @@ const Game: React.FC = () => {
           onClick={handleTestDistribution}
           style={{
             padding: "8px 16px",
-            backgroundColor: "#4CAF50",
-            color: "white",
+            backgroundColor: COLORS.BUTTON_PRIMARY,
+            color: COLORS.BUTTON_TEXT,
             border: "none",
             borderRadius: "4px",
             cursor: "pointer",
@@ -812,8 +813,8 @@ const Game: React.FC = () => {
             onClick={handleFinishRound}
             style={{
               padding: "8px 16px",
-              backgroundColor: "#2196F3",
-              color: "white",
+              backgroundColor: COLORS.BUTTON_SECONDARY,
+              color: COLORS.BUTTON_TEXT,
               border: "none",
               borderRadius: "4px",
               cursor: "pointer",
@@ -828,8 +829,8 @@ const Game: React.FC = () => {
             onClick={handleCalculateScores}
             style={{
               padding: "8px 16px",
-              backgroundColor: "#9C27B0",
-              color: "white",
+              backgroundColor: COLORS.BUTTON_TERTIARY,
+              color: COLORS.BUTTON_TEXT,
               border: "none",
               borderRadius: "4px",
               cursor: "pointer",
@@ -846,10 +847,10 @@ const Game: React.FC = () => {
         <div
           className="tile-bag"
           style={{
-            border: "2px solid #999",
+            border: `2px solid ${COLORS.BORDER}`,
             borderRadius: "8px",
             padding: "15px",
-            backgroundColor: "white",
+            backgroundColor: COLORS.BUTTON_BG,
             width: "120px",
           }}
         >
@@ -883,7 +884,7 @@ const Game: React.FC = () => {
                     width: "20px",
                     height: "20px",
                     backgroundColor: `var(--${color})`,
-                    border: "1px solid #999",
+                    border: `1px solid ${COLORS.BORDER}`,
                   }}
                 />
                 <span style={{ fontSize: "14px", color: "black" }}>
@@ -916,12 +917,12 @@ const Game: React.FC = () => {
               width: "80px",
               height: "80px",
               borderRadius: "50%",
-              border: "2px solid #999",
+              border: `2px solid ${COLORS.BORDER}`,
               display: "flex",
               flexWrap: "wrap",
               padding: "5px",
               gap: "2px",
-              backgroundColor: "#d2b48c",
+              backgroundColor: COLORS.FACTORY_BG,
               cursor: gameState.pot.length > 0 ? "pointer" : "default",
               opacity: gameState.pot.length > 0 ? 1 : 0.5,
             }}
@@ -933,7 +934,7 @@ const Game: React.FC = () => {
                   width: "20px",
                   height: "20px",
                   backgroundColor: `var(--${tile.type})`,
-                  border: "1px solid #999",
+                  border: `1px solid ${COLORS.BORDER}`,
                 }}
               />
             ))}
@@ -959,11 +960,11 @@ const Game: React.FC = () => {
                   gridTemplateColumns: "repeat(2, 40px)",
                   gap: "2px",
                   padding: "10px",
-                  border: "1px solid #999",
+                  border: `1px solid ${COLORS.BORDER}`,
                   borderRadius: "50%",
                   cursor: factory.length > 0 ? "pointer" : "default",
                   opacity: factory.length > 0 ? 1 : 0.5,
-                  backgroundColor: "#d2b48c",
+                  backgroundColor: COLORS.FACTORY_BG,
                   width: "82px", // 2 * 40px + 2px gap
                   height: "82px", // 2 * 40px + 2px gap
                 }}
@@ -979,8 +980,8 @@ const Game: React.FC = () => {
                         height: "40px",
                         backgroundColor: factory[tileIndex]
                           ? `var(--${factory[tileIndex].type})`
-                          : "#f5f5f5",
-                        border: "1px solid #999",
+                          : COLORS.EMPTY_SPACE,
+                        border: `1px solid ${COLORS.BORDER}`,
                       }}
                     />
                   ))}
@@ -993,10 +994,10 @@ const Game: React.FC = () => {
         <div
           className="discard-pile"
           style={{
-            border: "2px solid #999",
+            border: `2px solid ${COLORS.BORDER}`,
             borderRadius: "8px",
             padding: "15px",
-            backgroundColor: "white",
+            backgroundColor: COLORS.BUTTON_BG,
             width: "120px",
           }}
         >
@@ -1030,7 +1031,7 @@ const Game: React.FC = () => {
                     width: "20px",
                     height: "20px",
                     backgroundColor: `var(--${color})`,
-                    border: "1px solid #999",
+                    border: `1px solid ${COLORS.BORDER}`,
                   }}
                 />
                 <span style={{ fontSize: "14px", color: "black" }}>
