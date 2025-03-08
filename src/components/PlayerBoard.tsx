@@ -178,27 +178,6 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           position: "relative",
         }}
       >
-        {hasFirstPlayerMarker && (
-          <div
-            style={{
-              position: "absolute",
-              left: "-50px",
-              bottom: "5px",
-              width: "40px",
-              height: "40px",
-              backgroundColor: "#333",
-              border: "1px solid #999",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontWeight: "bold",
-              fontSize: "24px",
-            }}
-          >
-            1
-          </div>
-        )}
         {board.floor.map((tile, index) => (
           <div
             key={index}
@@ -225,22 +204,55 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         Score: {board.score}
       </div>
 
-      {/* End Turn Button - only show for active player */}
-      {isActive && (
-        <button
-          onClick={onEndTurn}
-          disabled={!canEndTurn}
-          style={{
-            padding: "10px 20px",
-            marginTop: "20px",
-            fontSize: "1.1em",
-            cursor: canEndTurn ? "pointer" : "default",
-            opacity: canEndTurn ? 1 : 0.5,
-          }}
-        >
-          End Turn
-        </button>
-      )}
+      {/* Bottom row container for First Player Marker and End Turn button */}
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "20px",
+          padding: "0 20px",
+        }}
+      >
+        {/* First Player Marker */}
+        {hasFirstPlayerMarker && (
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              backgroundColor: "#333",
+              border: "1px solid #999",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontWeight: "bold",
+              fontSize: "24px",
+            }}
+          >
+            1
+          </div>
+        )}
+        {/* Spacer div when no marker to maintain layout */}
+        {!hasFirstPlayerMarker && <div style={{ width: "40px" }} />}
+
+        {/* End Turn Button - only show for active player */}
+        {isActive && (
+          <button
+            onClick={onEndTurn}
+            disabled={!canEndTurn}
+            style={{
+              padding: "10px 20px",
+              fontSize: "1.1em",
+              cursor: canEndTurn ? "pointer" : "default",
+              opacity: canEndTurn ? 1 : 0.5,
+            }}
+          >
+            End Turn
+          </button>
+        )}
+      </div>
     </div>
   );
 };
