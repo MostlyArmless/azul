@@ -9,6 +9,7 @@ interface PlayerBoardProps {
   onStaircaseRowClick: (rowIndex: number) => void;
   onFloorClick: () => void;
   onHoldingAreaTileClick: (tile: Tile) => void;
+  onResetPlacement: () => void;
   onResetTurn: () => void;
   selectedTile: Tile | null;
   selectedColor: TileType | null;
@@ -24,6 +25,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
   onStaircaseRowClick,
   onFloorClick,
   onHoldingAreaTileClick,
+  onResetPlacement,
   onResetTurn,
   selectedTile,
   selectedColor,
@@ -32,6 +34,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
   hasFirstPlayerMarker = false,
 }) => {
   const [isResetHovered, setIsResetHovered] = useState(false);
+  const [isTurnResetHovered, setIsTurnResetHovered] = useState(false);
 
   return (
     <div
@@ -48,6 +51,47 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         alignItems: "center",
       }}
     >
+      {/* Turn Reset Button */}
+      {isActive && board.holdingArea.length > 0 && (
+        <button
+          onClick={onResetTurn}
+          onMouseEnter={() => setIsTurnResetHovered(true)}
+          onMouseLeave={() => setIsTurnResetHovered(false)}
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            padding: "4px",
+            cursor: "pointer",
+            backgroundColor: isTurnResetHovered ? "#f0f0f0" : "white",
+            border: "1px solid #999",
+            borderRadius: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "24px",
+            height: "24px",
+            transition: "all 0.2s ease",
+            boxShadow: isTurnResetHovered
+              ? "0 2px 4px rgba(0,0,0,0.2)"
+              : "0 1px 2px rgba(0,0,0,0.1)",
+            transform: isTurnResetHovered ? "scale(1.1)" : "scale(1)",
+            zIndex: 2,
+          }}
+        >
+          <img
+            src={resetIcon}
+            alt="Reset turn"
+            style={{
+              width: "16px",
+              height: "16px",
+              transition: "transform 0.2s ease",
+              transform: isTurnResetHovered ? "rotate(-180deg)" : "rotate(0)",
+            }}
+          />
+        </button>
+      )}
+
       <h2
         style={{
           textAlign: "center",
@@ -96,10 +140,10 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
             />
           ))}
 
-          {/* Reset Button */}
+          {/* Reset Placement Button */}
           {isActive && (
             <button
-              onClick={onResetTurn}
+              onClick={onResetPlacement}
               disabled={board.holdingArea.every((tile) => tile !== null)}
               onMouseEnter={() => setIsResetHovered(true)}
               onMouseLeave={() => setIsResetHovered(false)}
@@ -142,7 +186,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
             >
               <img
                 src={resetIcon}
-                alt="Reset turn"
+                alt="Reset placement"
                 style={{
                   width: "16px",
                   height: "16px",

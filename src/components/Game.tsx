@@ -5,6 +5,7 @@ import {
   PlayerBoard as PlayerBoardType,
   Tile,
   TileType,
+  TileSource,
 } from "../types";
 import PlayerBoard from "./PlayerBoard";
 
@@ -54,6 +55,7 @@ const createInitialGameState = (): GameState => {
     firstPlayerMarkerIndex: 0,
     hasFirstPlayerBeenMoved: false,
     placedTilesThisTurn: [],
+    currentTileSource: null,
   };
 };
 
@@ -117,6 +119,7 @@ const Game: React.FC = () => {
         draft.selectedColor = null;
         draft.hasPlacedTile = false;
         draft.placedTilesThisTurn = [];
+        draft.currentTileSource = null;
         draft.currentPlayer = (draft.currentPlayer + 1) % 2;
 
         // If all factories are empty, refill them from the bag
@@ -142,7 +145,8 @@ const Game: React.FC = () => {
   const handleFactoryClick = (factoryIndex: number) => {
     if (
       gameState.factories[factoryIndex].length === 0 ||
-      gameState.hasPlacedTile
+      gameState.hasPlacedTile ||
+      gameState.currentTileSource !== null // New check to prevent multiple factory selections
     )
       return;
 
@@ -155,6 +159,12 @@ const Game: React.FC = () => {
 
         // Clear the factory
         draft.factories[factoryIndex] = [];
+
+        // Track the source
+        draft.currentTileSource = {
+          type: "factory",
+          index: factoryIndex,
+        };
       })
     );
   };
@@ -271,7 +281,13 @@ const Game: React.FC = () => {
   };
 
   const handlePotClick = () => {
-    if (gameState.pot.length === 0 || gameState.hasPlacedTile) return;
+    if (
+      gameState.pot.length === 0 ||
+      gameState.hasPlacedTile ||
+      (gameState.currentTileSource !== null &&
+        gameState.currentTileSource.type !== "pot") // Only prevent if we've selected from a factory
+    )
+      return;
 
     setGameState(
       produce((draft) => {
@@ -280,6 +296,9 @@ const Game: React.FC = () => {
 
         // Clear the pot
         draft.pot = [];
+
+        // Track the source
+        draft.currentTileSource = { type: "pot" };
 
         // If this is the first time the pot is clicked in the game,
         // give the first player marker to the current player
@@ -294,7 +313,7 @@ const Game: React.FC = () => {
     );
   };
 
-  const handleResetTurn = (playerIndex: number) => {
+  const handleResetPlacement = (playerIndex: number) => {
     if (
       playerIndex !== gameState.currentPlayer ||
       gameState.placedTilesThisTurn.length === 0
@@ -345,6 +364,74 @@ const Game: React.FC = () => {
         draft.selectedTile = null;
         draft.selectedColor = null;
         draft.placedTilesThisTurn = [];
+      })
+    );
+  };
+
+  const handleResetTurn = (playerIndex: number) => {
+    if (playerIndex !== gameState.currentPlayer) return;
+
+    setGameState(
+      produce((draft) => {
+        const playerBoard = draft.players[playerIndex];
+
+        // First, reset any placed tiles back to holding area
+        if (draft.placedTilesThisTurn.length > 0) {
+          // Create a map to count how many tiles of each type we need to restore
+          const tilesToRestore = draft.placedTilesThisTurn.reduce(
+            (acc, placement) => {
+              acc[placement.type] = (acc[placement.type] || 0) + 1;
+              return acc;
+            },
+            {} as Record<TileType, number>
+          );
+
+          // Remove tiles from their placed locations
+          draft.placedTilesThisTurn.forEach((placement) => {
+            if (placement.location === "staircase") {
+              playerBoard.staircase[placement.rowIndex!][placement.position] =
+                null;
+            } else {
+              playerBoard.floor[placement.position] = null;
+            }
+          });
+
+          // Find empty spots in holding area
+          const emptySpots = playerBoard.holdingArea
+            .map((_, index) => index)
+            .filter((index) => !playerBoard.holdingArea[index]);
+
+          // Restore tiles to holding area
+          let spotIndex = 0;
+          Object.entries(tilesToRestore).forEach(([type, count]) => {
+            for (let i = 0; i < count && spotIndex < emptySpots.length; i++) {
+              playerBoard.holdingArea[emptySpots[spotIndex]] = {
+                type: type as TileType,
+              };
+              spotIndex++;
+            }
+          });
+        }
+
+        // Then, return all tiles from holding area back to their source
+        const tiles = playerBoard.holdingArea.filter(
+          (t): t is Tile => t !== null
+        );
+        if (draft.currentTileSource?.type === "factory") {
+          draft.factories[draft.currentTileSource.index] = tiles;
+        } else if (draft.currentTileSource?.type === "pot") {
+          draft.pot.push(...tiles);
+        }
+
+        // Clear the holding area
+        playerBoard.holdingArea = [];
+
+        // Reset all turn state
+        draft.hasPlacedTile = false;
+        draft.selectedTile = null;
+        draft.selectedColor = null;
+        draft.placedTilesThisTurn = [];
+        draft.currentTileSource = null;
       })
     );
   };
@@ -481,6 +568,7 @@ const Game: React.FC = () => {
             onHoldingAreaTileClick={(tile) =>
               handleHoldingAreaTileClick(index, tile)
             }
+            onResetPlacement={() => handleResetPlacement(index)}
             onResetTurn={() => handleResetTurn(index)}
             selectedTile={gameState.selectedTile}
             selectedColor={gameState.selectedColor}

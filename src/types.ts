@@ -1,5 +1,12 @@
 export type TileType = 'blue' | 'red' | 'black' | 'yellow' | 'white';
 
+export type TileSource = {
+  type: 'factory';
+  index: number;
+} | {
+  type: 'pot';
+};
+
 export interface Tile {
   type: TileType;
 }
@@ -24,4 +31,5 @@ export interface GameState {
   firstPlayerMarkerIndex: number;
   hasFirstPlayerBeenMoved: boolean;
   placedTilesThisTurn: { type: TileType; location: 'staircase' | 'floor'; rowIndex?: number; position: number }[];
+  currentTileSource: TileSource | null;
 } 
