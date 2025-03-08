@@ -158,11 +158,7 @@ const Game: React.FC = () => {
   };
 
   const handleHoldingAreaTileClick = (playerIndex: number, tile: Tile) => {
-    if (
-      playerIndex !== gameState.currentPlayer ||
-      gameState.hasPlacedTile ||
-      (gameState.selectedColor && tile.type !== gameState.selectedColor)
-    )
+    if (playerIndex !== gameState.currentPlayer || gameState.hasPlacedTile)
       return;
 
     setGameState(
