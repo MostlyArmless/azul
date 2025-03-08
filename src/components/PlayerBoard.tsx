@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { PlayerBoard as PlayerBoardType, Tile, TileType } from "../types";
+import {
+  PlayerBoard as PlayerBoardType,
+  Tile,
+  TileType,
+  WALL_PATTERN,
+} from "../types";
 import resetIcon from "../assets/reset.svg";
 
 interface PlayerBoardProps {
@@ -263,17 +268,23 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           }}
         >
           {board.wall.map((row, rowIndex) =>
-            row.map((cell, colIndex) => (
-              <div
-                key={`${rowIndex}-${colIndex}`}
-                style={{
-                  width: "40px",
-                  height: "40px",
-                  border: "1px solid #999",
-                  backgroundColor: cell ? `var(--${cell})` : "#eee",
-                }}
-              />
-            ))
+            row.map((cell, colIndex) => {
+              const patternColor = WALL_PATTERN[rowIndex][colIndex];
+              return (
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    border: "1px solid #999",
+                    backgroundColor: cell
+                      ? `var(--${cell.type})`
+                      : `var(--${patternColor})`,
+                    opacity: cell ? 1 : 0.15,
+                  }}
+                />
+              );
+            })
           )}
         </div>
       </div>

@@ -1,5 +1,14 @@
 export type TileType = 'blue' | 'red' | 'black' | 'yellow' | 'white';
 
+// Define the wall pattern - each position shows which color belongs there
+export const WALL_PATTERN: TileType[][] = [
+  ['blue', 'yellow', 'red', 'black', 'white'],
+  ['white', 'blue', 'yellow', 'red', 'black'],
+  ['black', 'white', 'blue', 'yellow', 'red'],
+  ['red', 'black', 'white', 'blue', 'yellow'],
+  ['yellow', 'red', 'black', 'white', 'blue']
+];
+
 export type TileSource = {
   type: 'factory';
   index: number;
