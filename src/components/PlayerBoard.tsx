@@ -12,6 +12,7 @@ interface PlayerBoardProps {
   selectedColor: TileType | null;
   onEndTurn: () => void;
   canEndTurn: boolean;
+  hasFirstPlayerMarker?: boolean;
 }
 
 const PlayerBoard: React.FC<PlayerBoardProps> = ({
@@ -25,6 +26,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
   selectedColor,
   onEndTurn,
   canEndTurn,
+  hasFirstPlayerMarker = false,
 }) => {
   return (
     <div
@@ -173,8 +175,30 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           padding: "5px",
           justifyContent: "center",
           cursor: isActive ? "pointer" : "default",
+          position: "relative",
         }}
       >
+        {hasFirstPlayerMarker && (
+          <div
+            style={{
+              position: "absolute",
+              left: "-50px",
+              bottom: "5px",
+              width: "40px",
+              height: "40px",
+              backgroundColor: "#333",
+              border: "1px solid #999",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontWeight: "bold",
+              fontSize: "24px",
+            }}
+          >
+            1
+          </div>
+        )}
         {board.floor.map((tile, index) => (
           <div
             key={index}

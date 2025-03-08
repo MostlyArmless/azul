@@ -51,6 +51,8 @@ const createInitialGameState = (): GameState => {
     selectedTile: null,
     hasPlacedTile: false,
     selectedColor: null,
+    firstPlayerMarkerIndex: 0,
+    hasFirstPlayerBeenMoved: false,
   };
 };
 
@@ -255,6 +257,30 @@ const Game: React.FC = () => {
     );
   };
 
+  const handlePotClick = () => {
+    if (gameState.pot.length === 0 || gameState.hasPlacedTile) return;
+
+    setGameState(
+      produce((draft) => {
+        // Move all tiles from pot to current player's holding area
+        draft.players[draft.currentPlayer].holdingArea = [...draft.pot];
+
+        // Clear the pot
+        draft.pot = [];
+
+        // If this is the first time the pot is clicked in the game,
+        // give the first player marker to the current player
+        if (
+          draft.firstPlayerMarkerIndex === 0 &&
+          !draft.hasFirstPlayerBeenMoved
+        ) {
+          draft.firstPlayerMarkerIndex = draft.currentPlayer;
+          draft.hasFirstPlayerBeenMoved = true;
+        }
+      })
+    );
+  };
+
   return (
     <div
       className="game"
@@ -280,6 +306,7 @@ const Game: React.FC = () => {
         {/* Central Pot */}
         <div
           className="pot"
+          onClick={handlePotClick}
           style={{
             position: "absolute",
             top: "50%",
@@ -294,6 +321,8 @@ const Game: React.FC = () => {
             padding: "5px",
             gap: "2px",
             backgroundColor: "white",
+            cursor: gameState.pot.length > 0 ? "pointer" : "default",
+            opacity: gameState.pot.length > 0 ? 1 : 0.5,
           }}
         >
           {gameState.pot.map((tile, index) => (
@@ -388,6 +417,7 @@ const Game: React.FC = () => {
             selectedColor={gameState.selectedColor}
             onEndTurn={handleEndTurn}
             canEndTurn={gameState.hasPlacedTile}
+            hasFirstPlayerMarker={index === gameState.firstPlayerMarkerIndex}
           />
         ))}
       </div>

@@ -21,4 +21,6 @@ export interface GameState {
   selectedTile: Tile | null;
   hasPlacedTile: boolean;
   selectedColor: TileType | null;
+  firstPlayerMarkerIndex: number;
+  hasFirstPlayerBeenMoved: boolean;
 } 
