@@ -465,6 +465,75 @@ const Game: React.FC = () => {
     );
   };
 
+  const handleTestDistribution = () => {
+    setGameState(
+      produce((draft) => {
+        // Collect all tiles from factories and pot
+        const allTiles: Tile[] = [];
+        draft.factories.forEach((factory) => {
+          allTiles.push(...factory);
+          factory.length = 0; // Clear factory
+        });
+        allTiles.push(...draft.pot);
+        draft.pot = []; // Clear pot
+
+        // For each player
+        for (let playerIndex = 0; playerIndex < 2; playerIndex++) {
+          const player = draft.players[playerIndex];
+
+          // Group tiles by color
+          const tilesByColor: Record<TileType, Tile[]> = {
+            blue: [],
+            red: [],
+            black: [],
+            yellow: [],
+            white: [],
+          };
+
+          // Distribute tiles randomly between players
+          const playerTiles = allTiles.splice(
+            0,
+            Math.floor(allTiles.length / (2 - playerIndex))
+          );
+          playerTiles.forEach((tile) => {
+            tilesByColor[tile.type].push(tile);
+          });
+
+          // Place tiles in staircase rows
+          Object.entries(tilesByColor).forEach(([color, tiles]) => {
+            if (tiles.length === 0) return;
+
+            // Find an empty row that can fit these tiles
+            for (
+              let rowIndex = 0;
+              rowIndex < player.staircase.length;
+              rowIndex++
+            ) {
+              const row = player.staircase[rowIndex];
+              if (
+                row.every((cell) => cell === null) &&
+                tiles.length <= row.length
+              ) {
+                // Fill the row with tiles from right to left
+                for (let i = 0; i < tiles.length; i++) {
+                  row[row.length - 1 - i] = tiles[i];
+                }
+                break;
+              }
+            }
+          });
+        }
+
+        // Reset turn state
+        draft.selectedTile = null;
+        draft.selectedColor = null;
+        draft.hasPlacedTile = false;
+        draft.placedTilesThisTurn = [];
+        draft.currentTileSource = null;
+      })
+    );
+  };
+
   return (
     <div
       className="game"
@@ -475,7 +544,30 @@ const Game: React.FC = () => {
         alignItems: "center",
       }}
     >
-      <h1>Azul</h1>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "20px",
+          marginBottom: "20px",
+        }}
+      >
+        <h1>Azul</h1>
+        <button
+          onClick={handleTestDistribution}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "14px",
+          }}
+        >
+          Test Distribution
+        </button>
+      </div>
 
       <div style={{ display: "flex", alignItems: "flex-start", gap: "40px" }}>
         {/* Tile Bag Display */}

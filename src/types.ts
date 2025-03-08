@@ -12,7 +12,7 @@ export interface Tile {
 }
 
 export interface PlayerBoard {
-  wall: (TileType | null)[][];
+  wall: (Tile | null)[][];
   staircase: (Tile | null)[][];
   floor: (Tile | null)[];
   score: number;
