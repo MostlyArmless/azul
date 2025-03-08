@@ -117,7 +117,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
             flexWrap: "wrap",
             gap: "4px",
             padding: "10px",
-            border: "2px dashed #999",
+            border: "2px solid #999",
             borderRadius: "8px",
             position: "absolute",
             top: "20px",
@@ -134,8 +134,8 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
               style={{
                 width: "40px",
                 height: "40px",
-                backgroundColor: tile ? `var(--${tile.type})` : "var(--empty)",
-                border: "1px solid #999",
+                backgroundColor: tile ? `var(--${tile.type})` : "white",
+                border: tile ? "2px solid #666" : "2px dashed #999",
                 cursor: tile && isActive ? "pointer" : "default",
                 outline:
                   tile && selectedColor && tile.type === selectedColor
@@ -216,13 +216,14 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         style={{ display: "flex", gap: "40px", justifyContent: "center" }}
       >
         {/* Staircase */}
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", width: "240px", height: "220px" }}>
           <div
             className="staircase"
             style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "2px",
+              position: "relative",
+              backgroundColor: "white",
+              width: "100%",
+              height: "100%",
             }}
           >
             {board.staircase.map((row, rowIndex) => (
@@ -230,10 +231,11 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                 key={rowIndex}
                 onClick={() => isActive && onStaircaseRowClick(rowIndex)}
                 style={{
+                  position: "absolute",
                   display: "flex",
-                  marginLeft: `${(4 - rowIndex) * 40}px`,
-                  height: "40px",
-                  gap: "2px",
+                  gap: "0",
+                  right: "0",
+                  top: `${rowIndex * (40 + 2)}px`,
                   cursor: isActive ? "pointer" : "default",
                 }}
               >
@@ -245,10 +247,13 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                       style={{
                         width: "40px",
                         height: "40px",
-                        border: "1px solid #999",
+                        border: row[cellIndex]?.type
+                          ? "2px solid #666"
+                          : "2px dashed #999",
                         backgroundColor: row[cellIndex]?.type
                           ? `var(--${row[cellIndex]?.type})`
-                          : "var(--empty)",
+                          : "white",
+                        marginLeft: "-2px", // Compensate for border overlap
                       }}
                     />
                   ))}
@@ -302,6 +307,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           justifyContent: "center",
           cursor: isActive ? "pointer" : "default",
           position: "relative",
+          backgroundColor: "white",
         }}
       >
         {board.floor.map((tile, index) => {
@@ -312,10 +318,8 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
               style={{
                 width: "40px",
                 height: "40px",
-                border: "1px solid #999",
-                backgroundColor: tile?.type
-                  ? `var(--${tile.type})`
-                  : "var(--empty)",
+                border: tile?.type ? "1px solid #999" : "1px dashed #999",
+                backgroundColor: tile?.type ? `var(--${tile.type})` : "white",
                 position: "relative",
               }}
             >
