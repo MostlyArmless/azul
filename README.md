@@ -1,54 +1,60 @@
-# React + TypeScript + Vite
+# Azul
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A digital implementation of the popular tile-placement board game Azul.
 
-Currently, two official plugins are available:
+## Game Rules
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Azul is a tile-drafting and pattern-building game where players compete to create the most beautiful mosaic wall. Here's how to play:
 
-## Expanding the ESLint configuration
+### Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- The game is played with colored tiles: blue, red, black, yellow, and white
+- Each color has 20 tiles in the bag at the start of the game
+- 5 factory displays are arranged in a circle, each filled with exactly 4 random tiles from the bag
+- A central area (the "pot") starts empty but will collect discarded tiles
+- Each player has their own board consisting of:
+  - A pattern wall (5x5 grid)
+  - A ready zone (5 rows of increasing length: 1-5 spaces)
+  - A floor line (7 spaces with penalty values: -1, -1, -2, -2, -2, -3, -3)
+  - A holding area for temporarily storing collected tiles
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### Gameplay
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. **Taking Tiles**
+   - On your turn, you must either:
+     - Take all tiles of one color from a factory (moving remaining tiles to the pot)
+     - Take all tiles of one color from the pot
+   - The first player to take from the pot in a round gets the first player marker, and gets to start the next round
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2. **Placing Tiles**
+   - After collecting tiles, you must place them in a single row in your ready zone
+   - All tiles must be placed in the same row
+   - You can't place tiles in a row if:
+     - The row is already full
+     - The row already contains different colored tiles
+   - Any tiles you can't place go to your floor line
+   - Once you start placing tiles, you must place all tiles of that color from your holding area
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+3. **Turn Structure**
+   - Select a factory or the pot to take tiles
+   - Choose a row in your ready zone to place tiles
+   - Place all tiles of the selected color
+   - Any excess tiles go to your floor line
+   - End your turn
+
+4. **Round End**
+   - A round ends when all factories and the pot are empty
+   - The bag is refilled with tiles from the pot if needed
+   - The player with the first player marker starts the next round
+
+### Scoring
+(Not yet implemented in current version)
+- Points are awarded for completing rows and creating patterns
+- Tiles in the floor line result in penalty points as shown (-1 to -3)
+- The game ends when a player completes a horizontal row on their wall
+- The player with the highest score wins
+
+### Special Features
+- Players can reset their turn using the reset button in their holding area
+- The game tracks the first player marker between rounds
+- Visual feedback shows the active player and available actions
