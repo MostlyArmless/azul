@@ -132,9 +132,11 @@ const Game: React.FC = () => {
         className="players"
         style={{
           display: "flex",
-          gap: "40px",
-          flexWrap: "wrap",
+          gap: "20px",
+          flexWrap: "nowrap",
           justifyContent: "center",
+          width: "100%",
+          overflowX: "auto",
         }}
       >
         {gameState.players.map((board, index) => (
