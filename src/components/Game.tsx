@@ -448,99 +448,153 @@ const Game: React.FC = () => {
     >
       <h1>Azul</h1>
 
-      {/* Factories */}
-      <div
-        className="factories-container"
-        style={{
-          position: "relative",
-          width: "400px",
-          height: "400px",
-          marginBottom: "20px",
-        }}
-      >
-        {/* Central Pot */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: "40px" }}>
+        {/* Tile Bag Display */}
         <div
-          className="pot"
-          onClick={handlePotClick}
+          className="tile-bag"
           style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "80px",
-            height: "80px",
-            borderRadius: "50%",
             border: "2px solid #999",
-            display: "flex",
-            flexWrap: "wrap",
-            padding: "5px",
-            gap: "2px",
+            borderRadius: "8px",
+            padding: "15px",
             backgroundColor: "white",
-            cursor: gameState.pot.length > 0 ? "pointer" : "default",
-            opacity: gameState.pot.length > 0 ? 1 : 0.5,
+            width: "120px",
           }}
         >
-          {gameState.pot.map((tile, index) => (
-            <div
-              key={index}
-              style={{
-                width: "20px",
-                height: "20px",
-                backgroundColor: `var(--${tile.type})`,
-                border: "1px solid #999",
-              }}
-            />
-          ))}
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: "bold",
+              marginBottom: "10px",
+              textAlign: "center",
+              color: "black",
+            }}
+          >
+            Tile Bag ({gameState.tileBag.length})
+          </div>
+          {["blue", "red", "black", "yellow", "white"].map((color) => {
+            const count = gameState.tileBag.filter(
+              (tile) => tile.type === color
+            ).length;
+            return (
+              <div
+                key={color}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "8px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: `var(--${color})`,
+                    border: "1px solid #999",
+                  }}
+                />
+                <span style={{ fontSize: "14px", color: "black" }}>
+                  {count}
+                </span>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Factories in a circle */}
-        {gameState.factories.map((factory, index) => {
-          const angle = (index * 2 * Math.PI) / NUM_FACTORIES;
-          const radius = 150; // Distance from center
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
+        {/* Factories */}
+        <div
+          className="factories-container"
+          style={{
+            position: "relative",
+            width: "400px",
+            height: "400px",
+            marginBottom: "20px",
+          }}
+        >
+          {/* Central Pot */}
+          <div
+            className="pot"
+            onClick={handlePotClick}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "80px",
+              height: "80px",
+              borderRadius: "50%",
+              border: "2px solid #999",
+              display: "flex",
+              flexWrap: "wrap",
+              padding: "5px",
+              gap: "2px",
+              backgroundColor: "white",
+              cursor: gameState.pot.length > 0 ? "pointer" : "default",
+              opacity: gameState.pot.length > 0 ? 1 : 0.5,
+            }}
+          >
+            {gameState.pot.map((tile, index) => (
+              <div
+                key={index}
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: `var(--${tile.type})`,
+                  border: "1px solid #999",
+                }}
+              />
+            ))}
+          </div>
 
-          return (
-            <div
-              key={index}
-              onClick={() => handleFactoryClick(index)}
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 40px)",
-                gap: "2px",
-                padding: "10px",
-                border: "1px solid #999",
-                borderRadius: "50%",
-                cursor: factory.length > 0 ? "pointer" : "default",
-                opacity: factory.length > 0 ? 1 : 0.5,
-                backgroundColor: "white",
-                width: "82px", // 2 * 40px + 2px gap
-                height: "82px", // 2 * 40px + 2px gap
-              }}
-            >
-              {/* Always render 4 grid spaces, filled or empty */}
-              {Array(INITIAL_TILES_PER_FACTORY)
-                .fill(null)
-                .map((_, tileIndex) => (
-                  <div
-                    key={tileIndex}
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      backgroundColor: factory[tileIndex]
-                        ? `var(--${factory[tileIndex].type})`
-                        : "transparent",
-                      border: "1px solid #999",
-                    }}
-                  />
-                ))}
-            </div>
-          );
-        })}
+          {/* Factories in a circle */}
+          {gameState.factories.map((factory, index) => {
+            const angle = (index * 2 * Math.PI) / NUM_FACTORIES;
+            const radius = 150; // Distance from center
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+
+            return (
+              <div
+                key={index}
+                onClick={() => handleFactoryClick(index)}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 40px)",
+                  gap: "2px",
+                  padding: "10px",
+                  border: "1px solid #999",
+                  borderRadius: "50%",
+                  cursor: factory.length > 0 ? "pointer" : "default",
+                  opacity: factory.length > 0 ? 1 : 0.5,
+                  backgroundColor: "white",
+                  width: "82px", // 2 * 40px + 2px gap
+                  height: "82px", // 2 * 40px + 2px gap
+                }}
+              >
+                {/* Always render 4 grid spaces, filled or empty */}
+                {Array(INITIAL_TILES_PER_FACTORY)
+                  .fill(null)
+                  .map((_, tileIndex) => (
+                    <div
+                      key={tileIndex}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        backgroundColor: factory[tileIndex]
+                          ? `var(--${factory[tileIndex].type})`
+                          : "transparent",
+                        border: "1px solid #999",
+                      }}
+                    />
+                  ))}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Player Boards */}
