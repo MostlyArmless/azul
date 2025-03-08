@@ -6,7 +6,7 @@ interface PlayerBoardProps {
   board: PlayerBoardType;
   playerIndex: number;
   isActive: boolean;
-  onReadyZoneRowClick: (rowIndex: number) => void;
+  onStaircaseRowClick: (rowIndex: number) => void;
   onFloorClick: () => void;
   onHoldingAreaTileClick: (tile: Tile) => void;
   onResetTurn: () => void;
@@ -21,7 +21,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
   board,
   playerIndex,
   isActive,
-  onReadyZoneRowClick,
+  onStaircaseRowClick,
   onFloorClick,
   onHoldingAreaTileClick,
   onResetTurn,
@@ -166,20 +166,20 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         className="board-container"
         style={{ display: "flex", gap: "40px", justifyContent: "center" }}
       >
-        {/* Ready Zone */}
+        {/* Staircase */}
         <div style={{ position: "relative" }}>
           <div
-            className="ready-zone"
+            className="staircase"
             style={{
               display: "flex",
               flexDirection: "column",
               gap: "2px",
             }}
           >
-            {board.readyZone.map((row, rowIndex) => (
+            {board.staircase.map((row, rowIndex) => (
               <div
                 key={rowIndex}
-                onClick={() => isActive && onReadyZoneRowClick(rowIndex)}
+                onClick={() => isActive && onStaircaseRowClick(rowIndex)}
                 style={{
                   display: "flex",
                   marginLeft: `${(4 - rowIndex) * 40}px`,

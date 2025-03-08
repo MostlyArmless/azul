@@ -15,7 +15,7 @@ const createEmptyPlayerBoard = (): PlayerBoardType => ({
   wall: Array(5)
     .fill(null)
     .map(() => Array(5).fill(null)),
-  readyZone: Array(5)
+  staircase: Array(5)
     .fill(null)
     .map((_, i) => Array(i + 1).fill(null)),
   floor: Array(7).fill(null),
@@ -171,14 +171,14 @@ const Game: React.FC = () => {
     );
   };
 
-  const handleReadyZoneRowClick = (playerIndex: number, rowIndex: number) => {
+  const handleStaircaseRowClick = (playerIndex: number, rowIndex: number) => {
     if (playerIndex !== gameState.currentPlayer || !gameState.selectedTile)
       return;
 
     setGameState(
       produce((draft) => {
         const playerBoard = draft.players[playerIndex];
-        const row = playerBoard.readyZone[rowIndex];
+        const row = playerBoard.staircase[rowIndex];
 
         // Find the rightmost empty spot in the row
         const emptySpotIndex = row.lastIndexOf(null);
@@ -190,7 +190,7 @@ const Game: React.FC = () => {
         // Track the placed tile
         draft.placedTilesThisTurn.push({
           type: draft.selectedTile!.type,
-          location: "readyZone",
+          location: "staircase",
           rowIndex,
           position: emptySpotIndex,
         });
@@ -316,8 +316,8 @@ const Game: React.FC = () => {
 
         // Remove tiles from their placed locations
         draft.placedTilesThisTurn.forEach((placement) => {
-          if (placement.location === "readyZone") {
-            playerBoard.readyZone[placement.rowIndex!][placement.position] =
+          if (placement.location === "staircase") {
+            playerBoard.staircase[placement.rowIndex!][placement.position] =
               null;
           } else {
             playerBoard.floor[placement.position] = null;
@@ -474,8 +474,8 @@ const Game: React.FC = () => {
             board={board}
             playerIndex={index}
             isActive={index === gameState.currentPlayer}
-            onReadyZoneRowClick={(rowIndex) =>
-              handleReadyZoneRowClick(index, rowIndex)
+            onStaircaseRowClick={(rowIndex) =>
+              handleStaircaseRowClick(index, rowIndex)
             }
             onFloorClick={() => handleFloorClick(index)}
             onHoldingAreaTileClick={(tile) =>

@@ -6,7 +6,7 @@ export interface Tile {
 
 export interface PlayerBoard {
   wall: (TileType | null)[][];
-  readyZone: (Tile | null)[][];
+  staircase: (Tile | null)[][];
   floor: (Tile | null)[];
   score: number;
   holdingArea: (Tile | null)[];
@@ -23,5 +23,5 @@ export interface GameState {
   selectedColor: TileType | null;
   firstPlayerMarkerIndex: number;
   hasFirstPlayerBeenMoved: boolean;
-  placedTilesThisTurn: { type: TileType; location: 'readyZone' | 'floor'; rowIndex?: number; position: number }[];
+  placedTilesThisTurn: { type: TileType; location: 'staircase' | 'floor'; rowIndex?: number; position: number }[];
 } 

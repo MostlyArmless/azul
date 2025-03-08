@@ -14,7 +14,7 @@ Azul is a tile-drafting and pattern-building game where players compete to creat
 - A central area (the "pot") starts empty but will collect discarded tiles
 - Each player has their own board consisting of:
   - A pattern wall (5x5 grid)
-  - A ready zone (5 rows of increasing length: 1-5 spaces)
+  - A staircase (5 rows of increasing length: 1-5 spaces)
   - A floor line (7 spaces with penalty values: -1, -1, -2, -2, -2, -3, -3)
   - A holding area for temporarily storing collected tiles
 
@@ -27,7 +27,7 @@ Azul is a tile-drafting and pattern-building game where players compete to creat
    - The first player to take from the pot in a round gets the first player marker, and gets to start the next round
 
 2. **Placing Tiles**
-   - After collecting tiles, you must place them in a single row in your ready zone
+   - After collecting tiles, you must place them in a single row in your staircase
    - All tiles must be placed in the same row
    - You can't place tiles in a row if:
      - The row is already full
@@ -37,7 +37,7 @@ Azul is a tile-drafting and pattern-building game where players compete to creat
 
 3. **Turn Structure**
    - Select a factory or the pot to take tiles
-   - Choose a row in your ready zone to place tiles
+   - Choose a row in your staircase to place tiles
    - Place all tiles of the selected color
    - Any excess tiles go to your floor line
    - End your turn
