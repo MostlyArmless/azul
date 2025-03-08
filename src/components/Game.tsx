@@ -19,6 +19,7 @@ const createEmptyPlayerBoard = (): PlayerBoardType => ({
     .map((_, i) => Array(i + 1).fill(null)),
   floor: Array(7).fill(null),
   score: 0,
+  holdingArea: [],
 });
 
 const createInitialGameState = (): GameState => {
@@ -45,6 +46,7 @@ const createInitialGameState = (): GameState => {
     factories: Array(NUM_FACTORIES)
       .fill(null)
       .map(() => []),
+    selectedTile: null,
   };
 };
 
@@ -77,6 +79,94 @@ const Game: React.FC = () => {
     fillFactories();
   }, []);
 
+  const handleFactoryClick = (factoryIndex: number) => {
+    if (gameState.factories[factoryIndex].length === 0) return;
+
+    setGameState((prevState) => {
+      // Create a deep copy of the state
+      const newState = {
+        ...prevState,
+        players: prevState.players.map((player, index) => {
+          if (index === prevState.currentPlayer) {
+            // Update the current player's board with a new holding area
+            return {
+              ...player,
+              holdingArea: [...prevState.factories[factoryIndex]],
+            };
+          }
+          return player;
+        }),
+        factories: prevState.factories.map((factory, index) =>
+          index === factoryIndex ? [] : factory
+        ),
+      };
+
+      console.log("Updated state:", newState);
+      return newState;
+    });
+  };
+
+  const handleHoldingAreaTileClick = (playerIndex: number, tile: Tile) => {
+    if (playerIndex !== gameState.currentPlayer) return;
+
+    setGameState((prevState) => ({
+      ...prevState,
+      selectedTile: tile,
+    }));
+  };
+
+  const handleReadyZoneRowClick = (playerIndex: number, rowIndex: number) => {
+    if (playerIndex !== gameState.currentPlayer || !gameState.selectedTile)
+      return;
+
+    setGameState((prevState) => {
+      const newState = { ...prevState };
+      const playerBoard = newState.players[playerIndex];
+      const row = playerBoard.readyZone[rowIndex];
+
+      // Find the rightmost empty spot in the row
+      const emptySpotIndex = row.findIndex((spot) => spot === null);
+      if (emptySpotIndex === -1) return prevState; // Row is full
+
+      // Place the selected tile
+      row[emptySpotIndex] = gameState.selectedTile;
+
+      // Remove the placed tile from holding area
+      playerBoard.holdingArea = playerBoard.holdingArea.filter(
+        (t) => t !== gameState.selectedTile
+      );
+      newState.selectedTile = null;
+
+      return newState;
+    });
+  };
+
+  const handleFloorClick = (playerIndex: number) => {
+    if (playerIndex !== gameState.currentPlayer || !gameState.selectedTile)
+      return;
+
+    setGameState((prevState) => {
+      const newState = { ...prevState };
+      const playerBoard = newState.players[playerIndex];
+      const floor = playerBoard.floor;
+
+      // Find the leftmost empty spot in the floor
+      const emptySpotIndex = floor.findIndex((spot) => spot === null);
+      if (emptySpotIndex === -1) return prevState; // Floor is full
+
+      // Place the selected tile
+      floor[emptySpotIndex] = gameState.selectedTile;
+
+      // Remove the placed tile from holding area
+      playerBoard.holdingArea = playerBoard.holdingArea.filter(
+        (t) => t !== gameState.selectedTile
+      );
+      newState.selectedTile = null;
+
+      return newState;
+    });
+  };
+
   return (
     <div
       className="game"
@@ -103,6 +193,7 @@ const Game: React.FC = () => {
         {gameState.factories.map((factory, index) => (
           <div
             key={index}
+            onClick={() => handleFactoryClick(index)}
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(2, 40px)",
@@ -110,6 +201,8 @@ const Game: React.FC = () => {
               padding: "10px",
               border: "1px solid #999",
               borderRadius: "50%",
+              cursor: factory.length > 0 ? "pointer" : "default",
+              opacity: factory.length > 0 ? 1 : 0.5,
             }}
           >
             {factory.map((tile, tileIndex) => (
@@ -140,7 +233,20 @@ const Game: React.FC = () => {
         }}
       >
         {gameState.players.map((board, index) => (
-          <PlayerBoard key={index} board={board} playerIndex={index} />
+          <PlayerBoard
+            key={index}
+            board={board}
+            playerIndex={index}
+            isActive={index === gameState.currentPlayer}
+            onReadyZoneRowClick={(rowIndex) =>
+              handleReadyZoneRowClick(index, rowIndex)
+            }
+            onFloorClick={() => handleFloorClick(index)}
+            onHoldingAreaTileClick={(tile) =>
+              handleHoldingAreaTileClick(index, tile)
+            }
+            selectedTile={gameState.selectedTile}
+          />
         ))}
       </div>
     </div>

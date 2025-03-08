@@ -9,6 +9,7 @@ export interface PlayerBoard {
   readyZone: (Tile | null)[][];
   floor: (Tile | null)[];
   score: number;
+  holdingArea: Tile[];
 }
 
 export interface GameState {
@@ -16,4 +17,5 @@ export interface GameState {
   currentPlayer: number;
   tileBag: Tile[];
   factories: Tile[][];
+  selectedTile: Tile | null;
 } 

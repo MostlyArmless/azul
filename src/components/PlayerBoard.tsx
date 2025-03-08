@@ -1,20 +1,35 @@
 import React from "react";
-import { PlayerBoard as PlayerBoardType } from "../types";
+import { PlayerBoard as PlayerBoardType, Tile } from "../types";
 
 interface PlayerBoardProps {
   board: PlayerBoardType;
   playerIndex: number;
+  isActive: boolean;
+  onReadyZoneRowClick: (rowIndex: number) => void;
+  onFloorClick: () => void;
+  onHoldingAreaTileClick: (tile: Tile) => void;
+  selectedTile: Tile | null;
 }
 
-const PlayerBoard: React.FC<PlayerBoardProps> = ({ board, playerIndex }) => {
+const PlayerBoard: React.FC<PlayerBoardProps> = ({
+  board,
+  playerIndex,
+  isActive,
+  onReadyZoneRowClick,
+  onFloorClick,
+  onHoldingAreaTileClick,
+  selectedTile,
+}) => {
   return (
     <div
       className="player-board"
       style={{
         margin: "20px",
         padding: "20px",
-        border: "2px solid #ccc",
+        border: `2px solid ${isActive ? "#2ecc71" : "#ccc"}`,
         minWidth: "500px",
+        opacity: isActive ? 1 : 0.7,
+        position: "relative",
       }}
     >
       <h2
@@ -28,11 +43,47 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({ board, playerIndex }) => {
         Player {playerIndex + 1}
       </h2>
 
+      {/* Holding Area */}
+      {board.holdingArea.length > 0 && (
+        <div
+          className="holding-area"
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "4px",
+            padding: "10px",
+            border: "2px dashed #999",
+            borderRadius: "8px",
+            position: "absolute",
+            top: "20px",
+            left: "20px",
+            width: "120px",
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            zIndex: 1,
+          }}
+        >
+          {board.holdingArea.map((tile, index) => (
+            <div
+              key={index}
+              onClick={() => isActive && onHoldingAreaTileClick(tile)}
+              style={{
+                width: "40px",
+                height: "40px",
+                backgroundColor: `var(--${tile.type})`,
+                border: "1px solid #999",
+                cursor: isActive ? "pointer" : "default",
+                outline: selectedTile === tile ? "3px solid #2ecc71" : "none",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       <div
         className="board-container"
         style={{ display: "flex", gap: "40px", justifyContent: "center" }}
       >
-        {/* Ready Zone staircase shape*/}
+        {/* Ready Zone */}
         <div
           className="ready-zone"
           style={{
@@ -44,11 +95,13 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({ board, playerIndex }) => {
           {board.readyZone.map((row, rowIndex) => (
             <div
               key={rowIndex}
+              onClick={() => isActive && onReadyZoneRowClick(rowIndex)}
               style={{
                 display: "flex",
                 marginLeft: `${(4 - rowIndex) * 40}px`,
                 height: "40px",
                 gap: "2px",
+                cursor: isActive ? "pointer" : "default",
               }}
             >
               {Array(rowIndex + 1)
@@ -99,6 +152,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({ board, playerIndex }) => {
       {/* Floor */}
       <div
         className="floor"
+        onClick={() => isActive && onFloorClick()}
         style={{
           display: "flex",
           gap: "2px",
@@ -106,6 +160,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({ board, playerIndex }) => {
           border: "1px solid #999",
           padding: "5px",
           justifyContent: "center",
+          cursor: isActive ? "pointer" : "default",
         }}
       >
         {board.floor.map((tile, index) => (
