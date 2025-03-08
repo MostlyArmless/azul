@@ -921,7 +921,7 @@ const Game: React.FC = () => {
               flexWrap: "wrap",
               padding: "5px",
               gap: "2px",
-              backgroundColor: "white",
+              backgroundColor: "#d2b48c",
               cursor: gameState.pot.length > 0 ? "pointer" : "default",
               opacity: gameState.pot.length > 0 ? 1 : 0.5,
             }}
@@ -963,7 +963,7 @@ const Game: React.FC = () => {
                   borderRadius: "50%",
                   cursor: factory.length > 0 ? "pointer" : "default",
                   opacity: factory.length > 0 ? 1 : 0.5,
-                  backgroundColor: "white",
+                  backgroundColor: "#d2b48c",
                   width: "82px", // 2 * 40px + 2px gap
                   height: "82px", // 2 * 40px + 2px gap
                 }}
@@ -979,7 +979,7 @@ const Game: React.FC = () => {
                         height: "40px",
                         backgroundColor: factory[tileIndex]
                           ? `var(--${factory[tileIndex].type})`
-                          : "transparent",
+                          : "#f5f5f5",
                         border: "1px solid #999",
                       }}
                     />

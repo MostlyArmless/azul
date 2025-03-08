@@ -134,7 +134,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
               style={{
                 width: "40px",
                 height: "40px",
-                backgroundColor: tile ? `var(--${tile.type})` : "white",
+                backgroundColor: tile ? `var(--${tile.type})` : "#f5f5f5",
                 border: tile ? "2px solid #666" : "2px dashed #999",
                 cursor: tile && isActive ? "pointer" : "default",
                 outline:
@@ -252,7 +252,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                           : "2px dashed #999",
                         backgroundColor: row[cellIndex]?.type
                           ? `var(--${row[cellIndex]?.type})`
-                          : "white",
+                          : "#f5f5f5",
                         marginLeft: "-2px", // Compensate for border overlap
                       }}
                     />
@@ -273,21 +273,33 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           }}
         >
           {board.wall.map((row, rowIndex) =>
-            row.map((cell, colIndex) => {
-              const patternColor = WALL_PATTERN[rowIndex][colIndex];
+            row.map((cell, cellIndex) => {
+              const patternColor = WALL_PATTERN[rowIndex][cellIndex];
               return (
                 <div
-                  key={`${rowIndex}-${colIndex}`}
+                  key={`${rowIndex}-${cellIndex}`}
                   style={{
                     width: "40px",
                     height: "40px",
                     border: "1px solid #999",
-                    backgroundColor: cell
-                      ? `var(--${cell.type})`
-                      : `var(--${patternColor})`,
-                    opacity: cell ? 1 : 0.15,
+                    backgroundColor: cell ? `var(--${cell.type})` : "#f5f5f5",
+                    position: "relative",
                   }}
-                />
+                >
+                  {!cell && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: `var(--${patternColor})`,
+                        opacity: 0.15,
+                      }}
+                    />
+                  )}
+                </div>
               );
             })
           )}
@@ -319,7 +331,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                 width: "40px",
                 height: "40px",
                 border: tile?.type ? "1px solid #999" : "1px dashed #999",
-                backgroundColor: tile?.type ? `var(--${tile.type})` : "white",
+                backgroundColor: tile?.type ? `var(--${tile.type})` : "#f5f5f5",
                 position: "relative",
               }}
             >
