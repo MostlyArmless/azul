@@ -214,6 +214,15 @@ const Game: React.FC = () => {
     );
   };
 
+  const isColorAllowedInRow = (
+    wall: (Tile | null)[][],
+    rowIndex: number,
+    color: TileType
+  ): boolean => {
+    // Check if this color already exists in the wall row
+    return !wall[rowIndex].some((tile) => tile?.type === color);
+  };
+
   const handleStaircaseRowClick = (playerIndex: number, rowIndex: number) => {
     if (playerIndex !== gameState.currentPlayer || !gameState.selectedTile)
       return;
@@ -222,6 +231,17 @@ const Game: React.FC = () => {
       produce((draft) => {
         const playerBoard = draft.players[playerIndex];
         const row = playerBoard.staircase[rowIndex];
+
+        // Check if this color is allowed in this row
+        if (
+          !isColorAllowedInRow(
+            playerBoard.wall,
+            rowIndex,
+            draft.selectedTile.type
+          )
+        ) {
+          return; // Color already exists in wall row
+        }
 
         // Find the rightmost empty spot in the row
         const emptySpotIndex = row.lastIndexOf(null);
@@ -450,7 +470,10 @@ const Game: React.FC = () => {
         const tiles = playerBoard.holdingArea.filter(
           (t): t is Tile => t !== null
         );
-        if (draft.currentTileSource?.type === "factory") {
+        if (
+          draft.currentTileSource?.type === "factory" &&
+          draft.currentTileSource.index !== undefined
+        ) {
           draft.factories[draft.currentTileSource.index] = tiles;
         } else if (draft.currentTileSource?.type === "pot") {
           draft.pot.push(...tiles);
@@ -507,7 +530,7 @@ const Game: React.FC = () => {
           Object.entries(tilesByColor).forEach(([color, tiles]) => {
             if (tiles.length === 0) return;
 
-            // Find an empty row that can fit these tiles
+            // Find an empty row that can fit these tiles and doesn't have this color in the wall
             for (
               let rowIndex = 0;
               rowIndex < player.staircase.length;
@@ -516,7 +539,8 @@ const Game: React.FC = () => {
               const row = player.staircase[rowIndex];
               if (
                 row.every((cell) => cell === null) &&
-                tiles.length <= row.length
+                tiles.length <= row.length &&
+                isColorAllowedInRow(player.wall, rowIndex, color as TileType)
               ) {
                 // Fill the row with tiles from right to left
                 for (let i = 0; i < tiles.length; i++) {
@@ -796,7 +820,7 @@ const Game: React.FC = () => {
               fontSize: "14px",
             }}
           >
-            Finish Round
+            Tile the Wall
           </button>
         )}
         {gameState.phase === "scoring" && (
