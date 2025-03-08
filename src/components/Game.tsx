@@ -64,36 +64,43 @@ const Game: React.FC = () => {
     createInitialGameState()
   );
 
-  // Fill factories at the start of each round
+  // Fill factories at the start of the game only
   useEffect(() => {
     const fillFactories = () => {
       setGameState(
         produce((draft) => {
-          // Fill each factory with 4 random tiles from the bag
-          draft.factories = draft.factories.map(() => {
+          // Fill each factory one at a time
+          for (
+            let factoryIndex = 0;
+            factoryIndex < NUM_FACTORIES;
+            factoryIndex++
+          ) {
             const factoryTiles: Tile[] = [];
+            // Take 4 random tiles for this factory
             for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
               if (draft.tileBag.length > 0) {
-                // Take a random tile from the bag
                 const randomIndex = Math.floor(
                   Math.random() * draft.tileBag.length
                 );
                 factoryTiles.push(draft.tileBag[randomIndex]);
-                // Remove the tile from the bag
+                // Remove the selected tile from the bag
                 draft.tileBag.splice(randomIndex, 1);
               }
             }
-            return factoryTiles;
-          });
+            draft.factories[factoryIndex] = factoryTiles;
+          }
         })
       );
     };
 
-    // Only fill factories if they're all empty
-    if (gameState.factories.every((factory) => factory.length === 0)) {
+    // Only fill factories at the start of the game
+    if (
+      gameState.factories.every((factory) => factory.length === 0) &&
+      gameState.pot.length === 0
+    ) {
       fillFactories();
     }
-  }, [gameState.factories]);
+  }, []); // Only run once on mount
 
   const handleEndTurn = () => {
     setGameState(
@@ -122,10 +129,13 @@ const Game: React.FC = () => {
         draft.currentTileSource = null;
         draft.currentPlayer = (draft.currentPlayer + 1) % 2;
 
-        // If all factories are empty, refill them from the bag
-        // If bag is empty, move all tiles from pot back to bag and shuffle
-        if (draft.factories.every((factory) => factory.length === 0)) {
-          if (draft.tileBag.length === 0 && draft.pot.length > 0) {
+        // Only refill factories if both factories AND pot are empty
+        const allFactoriesEmpty = draft.factories.every(
+          (factory) => factory.length === 0
+        );
+        if (allFactoriesEmpty && draft.pot.length === 0) {
+          // If bag is empty, move all tiles from pot back to bag and shuffle
+          if (draft.tileBag.length === 0) {
             draft.tileBag = [...draft.pot];
             draft.pot = [];
             // Shuffle the bag
@@ -136,6 +146,25 @@ const Game: React.FC = () => {
                 draft.tileBag[i],
               ];
             }
+          }
+
+          // Fill each factory
+          for (
+            let factoryIndex = 0;
+            factoryIndex < NUM_FACTORIES;
+            factoryIndex++
+          ) {
+            const factoryTiles: Tile[] = [];
+            for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
+              if (draft.tileBag.length > 0) {
+                const randomIndex = Math.floor(
+                  Math.random() * draft.tileBag.length
+                );
+                factoryTiles.push(draft.tileBag[randomIndex]);
+                draft.tileBag.splice(randomIndex, 1);
+              }
+            }
+            draft.factories[factoryIndex] = factoryTiles;
           }
         }
       })
