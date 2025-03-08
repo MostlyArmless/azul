@@ -17,5 +17,8 @@ export interface GameState {
   currentPlayer: number;
   tileBag: Tile[];
   factories: Tile[][];
+  pot: Tile[];
   selectedTile: Tile | null;
+  hasPlacedTile: boolean;
+  selectedColor: TileType | null;
 } 

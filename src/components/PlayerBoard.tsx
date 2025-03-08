@@ -1,5 +1,5 @@
 import React from "react";
-import { PlayerBoard as PlayerBoardType, Tile } from "../types";
+import { PlayerBoard as PlayerBoardType, Tile, TileType } from "../types";
 
 interface PlayerBoardProps {
   board: PlayerBoardType;
@@ -9,6 +9,7 @@ interface PlayerBoardProps {
   onFloorClick: () => void;
   onHoldingAreaTileClick: (tile: Tile) => void;
   selectedTile: Tile | null;
+  selectedColor: TileType | null;
 }
 
 const PlayerBoard: React.FC<PlayerBoardProps> = ({
@@ -19,6 +20,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
   onFloorClick,
   onHoldingAreaTileClick,
   selectedTile,
+  selectedColor,
 }) => {
   return (
     <div
@@ -73,7 +75,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                 border: "1px solid #999",
                 cursor: tile && isActive ? "pointer" : "default",
                 outline:
-                  tile && selectedTile && tile.type === selectedTile.type
+                  tile && selectedColor && tile.type === selectedColor
                     ? "3px solid #2ecc71"
                     : "none",
               }}
