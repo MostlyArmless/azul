@@ -65,13 +65,13 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           {board.holdingArea.map((tile, index) => (
             <div
               key={index}
-              onClick={() => isActive && onHoldingAreaTileClick(tile)}
+              onClick={() => tile && isActive && onHoldingAreaTileClick(tile)}
               style={{
                 width: "40px",
                 height: "40px",
-                backgroundColor: `var(--${tile.type})`,
+                backgroundColor: tile ? `var(--${tile.type})` : "var(--empty)",
                 border: "1px solid #999",
-                cursor: isActive ? "pointer" : "default",
+                cursor: tile && isActive ? "pointer" : "default",
                 outline: selectedTile === tile ? "3px solid #2ecc71" : "none",
               }}
             />
@@ -115,7 +115,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                       border: "1px solid #999",
                       backgroundColor: row[cellIndex]?.type
                         ? `var(--${row[cellIndex]?.type})`
-                        : "#eee",
+                        : "var(--empty)",
                     }}
                   />
                 ))}
@@ -170,7 +170,9 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
               width: "40px",
               height: "40px",
               border: "1px solid #999",
-              backgroundColor: tile?.type ? `var(--${tile.type})` : "#eee",
+              backgroundColor: tile?.type
+                ? `var(--${tile.type})`
+                : "var(--empty)",
             }}
           />
         ))}

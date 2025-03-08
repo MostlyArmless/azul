@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { produce } from "immer";
 import {
   GameState,
   PlayerBoard as PlayerBoardType,
@@ -58,22 +59,20 @@ const Game: React.FC = () => {
   useEffect(() => {
     // Fill factories at the start of each round
     const fillFactories = () => {
-      setGameState((prevState) => {
-        const newState = { ...prevState };
-        const { tileBag } = newState;
-
-        newState.factories = newState.factories.map(() => {
-          const factoryTiles: Tile[] = [];
-          for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
-            if (tileBag.length > 0) {
-              factoryTiles.push(tileBag.pop()!);
+      setGameState(
+        produce((draft) => {
+          const { tileBag } = draft;
+          draft.factories = draft.factories.map(() => {
+            const factoryTiles: Tile[] = [];
+            for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
+              if (tileBag.length > 0) {
+                factoryTiles.push(tileBag.pop()!);
+              }
             }
-          }
-          return factoryTiles;
-        });
-
-        return newState;
-      });
+            return factoryTiles;
+          });
+        })
+      );
     };
 
     fillFactories();
@@ -82,89 +81,82 @@ const Game: React.FC = () => {
   const handleFactoryClick = (factoryIndex: number) => {
     if (gameState.factories[factoryIndex].length === 0) return;
 
-    setGameState((prevState) => {
-      // Create a deep copy of the state
-      const newState = {
-        ...prevState,
-        players: prevState.players.map((player, index) => {
-          if (index === prevState.currentPlayer) {
-            // Update the current player's board with a new holding area
-            return {
-              ...player,
-              holdingArea: [...prevState.factories[factoryIndex]],
-            };
-          }
-          return player;
-        }),
-        factories: prevState.factories.map((factory, index) =>
-          index === factoryIndex ? [] : factory
-        ),
-      };
-
-      console.log("Updated state:", newState);
-      return newState;
-    });
+    setGameState(
+      produce((draft) => {
+        // Move tiles to current player's holding area
+        draft.players[draft.currentPlayer].holdingArea = [
+          ...draft.factories[factoryIndex],
+        ];
+        // Clear the factory
+        draft.factories[factoryIndex] = [];
+      })
+    );
   };
 
   const handleHoldingAreaTileClick = (playerIndex: number, tile: Tile) => {
     if (playerIndex !== gameState.currentPlayer) return;
 
-    setGameState((prevState) => ({
-      ...prevState,
-      selectedTile: tile,
-    }));
+    setGameState(
+      produce((draft) => {
+        draft.selectedTile = tile;
+      })
+    );
   };
 
   const handleReadyZoneRowClick = (playerIndex: number, rowIndex: number) => {
     if (playerIndex !== gameState.currentPlayer || !gameState.selectedTile)
       return;
 
-    setGameState((prevState) => {
-      const newState = { ...prevState };
-      const playerBoard = newState.players[playerIndex];
-      const row = playerBoard.readyZone[rowIndex];
+    setGameState(
+      produce((draft) => {
+        const playerBoard = draft.players[playerIndex];
+        const row = playerBoard.readyZone[rowIndex];
 
-      // Find the rightmost empty spot in the row
-      const emptySpotIndex = row.findIndex((spot) => spot === null);
-      if (emptySpotIndex === -1) return prevState; // Row is full
+        // Find the rightmost empty spot in the row
+        const emptySpotIndex = row.lastIndexOf(null);
+        if (emptySpotIndex === -1) return; // Row is full
 
-      // Place the selected tile
-      row[emptySpotIndex] = gameState.selectedTile;
+        // Place the selected tile
+        row[emptySpotIndex] = draft.selectedTile;
 
-      // Remove the placed tile from holding area
-      playerBoard.holdingArea = playerBoard.holdingArea.filter(
-        (t) => t !== gameState.selectedTile
-      );
-      newState.selectedTile = null;
-
-      return newState;
-    });
+        // Remove the placed tile from holding area by finding its index
+        const tileIndex = playerBoard.holdingArea.findIndex(
+          (t) => t && t.type === draft.selectedTile!.type
+        );
+        if (tileIndex !== -1) {
+          playerBoard.holdingArea[tileIndex] = null;
+        }
+        draft.selectedTile = null;
+      })
+    );
   };
 
   const handleFloorClick = (playerIndex: number) => {
     if (playerIndex !== gameState.currentPlayer || !gameState.selectedTile)
       return;
 
-    setGameState((prevState) => {
-      const newState = { ...prevState };
-      const playerBoard = newState.players[playerIndex];
-      const floor = playerBoard.floor;
+    setGameState(
+      produce((draft) => {
+        const playerBoard = draft.players[playerIndex];
+        const floor = playerBoard.floor;
 
-      // Find the leftmost empty spot in the floor
-      const emptySpotIndex = floor.findIndex((spot) => spot === null);
-      if (emptySpotIndex === -1) return prevState; // Floor is full
+        // Find the leftmost empty spot in the floor
+        const emptySpotIndex = floor.findIndex((spot) => spot === null);
+        if (emptySpotIndex === -1) return; // Floor is full
 
-      // Place the selected tile
-      floor[emptySpotIndex] = gameState.selectedTile;
+        // Place the selected tile
+        floor[emptySpotIndex] = draft.selectedTile;
 
-      // Remove the placed tile from holding area
-      playerBoard.holdingArea = playerBoard.holdingArea.filter(
-        (t) => t !== gameState.selectedTile
-      );
-      newState.selectedTile = null;
-
-      return newState;
-    });
+        // Remove the placed tile from holding area by finding its index
+        const tileIndex = playerBoard.holdingArea.findIndex(
+          (t) => t && t.type === draft.selectedTile!.type
+        );
+        if (tileIndex !== -1) {
+          playerBoard.holdingArea[tileIndex] = null;
+        }
+        draft.selectedTile = null;
+      })
+    );
   };
 
   return (

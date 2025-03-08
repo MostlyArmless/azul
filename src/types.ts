@@ -9,7 +9,7 @@ export interface PlayerBoard {
   readyZone: (Tile | null)[][];
   floor: (Tile | null)[];
   score: number;
-  holdingArea: Tile[];
+  holdingArea: (Tile | null)[];
 }
 
 export interface GameState {
