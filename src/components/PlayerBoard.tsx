@@ -72,7 +72,10 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                 backgroundColor: tile ? `var(--${tile.type})` : "var(--empty)",
                 border: "1px solid #999",
                 cursor: tile && isActive ? "pointer" : "default",
-                outline: selectedTile === tile ? "3px solid #2ecc71" : "none",
+                outline:
+                  tile && selectedTile && tile.type === selectedTile.type
+                    ? "3px solid #2ecc71"
+                    : "none",
               }}
             />
           ))}
