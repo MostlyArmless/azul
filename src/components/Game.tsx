@@ -6,6 +6,8 @@ import {
   Tile,
   TileType,
   TileSource,
+  GamePhase,
+  WALL_PATTERN,
 } from "../types";
 import PlayerBoard from "./PlayerBoard";
 
@@ -49,6 +51,7 @@ const createInitialGameState = (): GameState => {
       .fill(null)
       .map(() => []),
     pot: [],
+    discardPile: [],
     selectedTile: null,
     hasPlacedTile: false,
     selectedColor: null,
@@ -56,6 +59,7 @@ const createInitialGameState = (): GameState => {
     hasFirstPlayerBeenMoved: false,
     placedTilesThisTurn: [],
     currentTileSource: null,
+    phase: "playing" as GamePhase,
   };
 };
 
@@ -534,6 +538,218 @@ const Game: React.FC = () => {
     );
   };
 
+  const isRoundComplete = () => {
+    return (
+      gameState.factories.every((factory) => factory.length === 0) &&
+      gameState.pot.length === 0
+    );
+  };
+
+  const handleFinishRound = () => {
+    setGameState(
+      produce((draft) => {
+        // Move to wall tiling phase
+        draft.phase = "wall_tiling";
+
+        // Process each player's staircase
+        draft.players.forEach((player) => {
+          // For each row in the staircase
+          player.staircase.forEach((row, rowIndex) => {
+            // Check if row is full
+            if (row.every((cell) => cell !== null)) {
+              // Find the color of tiles in this row (they're all the same)
+              const firstTile = row[0];
+              if (!firstTile) return;
+
+              const tileType = firstTile.type;
+              const wallPattern = WALL_PATTERN[rowIndex];
+              if (!wallPattern) return;
+
+              const wallColIndex = wallPattern.indexOf(tileType);
+              if (wallColIndex === -1) return;
+
+              // Move one tile to the wall
+              const wallRow = player.wall[rowIndex];
+              if (!wallRow) return;
+
+              // Create and place the new tile
+              wallRow[wallColIndex] = { type: tileType };
+
+              // Move remaining tiles to the discard pile
+              const remainingTiles = row
+                .filter((tile): tile is Tile => tile !== null)
+                .slice(1);
+              draft.discardPile.push(...remainingTiles);
+
+              // Clear the staircase row
+              player.staircase[rowIndex] = Array(row.length).fill(null);
+            }
+          });
+        });
+
+        // Move to scoring phase
+        draft.phase = "scoring";
+      })
+    );
+  };
+
+  const calculateWallScore = (wall: (Tile | null)[][]): number => {
+    let score = 0;
+    const counted = Array(5)
+      .fill(null)
+      .map(() => Array(5).fill(false));
+
+    // Score horizontal lines
+    for (let row = 0; row < wall.length; row++) {
+      let lineStart = -1;
+      for (let col = 0; col < wall[row].length; col++) {
+        if (wall[row][col]) {
+          if (lineStart === -1) lineStart = col;
+        } else {
+          if (lineStart !== -1) {
+            const lineLength = col - lineStart;
+            if (lineLength > 1) {
+              // Mark tiles as counted and add points
+              for (let i = lineStart; i < col; i++) {
+                counted[row][i] = true;
+              }
+              score += lineLength;
+            }
+            lineStart = -1;
+          }
+        }
+      }
+      // Handle line that ends at the edge
+      if (lineStart !== -1) {
+        const lineLength = wall[row].length - lineStart;
+        if (lineLength > 1) {
+          for (let i = lineStart; i < wall[row].length; i++) {
+            counted[row][i] = true;
+          }
+          score += lineLength;
+        }
+      }
+    }
+
+    // Score vertical lines
+    for (let col = 0; col < wall[0].length; col++) {
+      let lineStart = -1;
+      for (let row = 0; row < wall.length; row++) {
+        if (wall[row][col]) {
+          if (lineStart === -1) lineStart = row;
+        } else {
+          if (lineStart !== -1) {
+            const lineLength = row - lineStart;
+            if (lineLength > 1) {
+              // Mark tiles as counted and add points
+              for (let i = lineStart; i < row; i++) {
+                counted[i][col] = true;
+              }
+              score += lineLength;
+            }
+            lineStart = -1;
+          }
+        }
+      }
+      // Handle line that ends at the edge
+      if (lineStart !== -1) {
+        const lineLength = wall.length - lineStart;
+        if (lineLength > 1) {
+          for (let i = lineStart; i < wall.length; i++) {
+            counted[i][col] = true;
+          }
+          score += lineLength;
+        }
+      }
+    }
+
+    // Score isolated tiles (those not part of any line)
+    for (let row = 0; row < wall.length; row++) {
+      for (let col = 0; col < wall[row].length; col++) {
+        if (wall[row][col] && !counted[row][col]) {
+          score += 1;
+        }
+      }
+    }
+
+    return score;
+  };
+
+  const calculateFloorPenalty = (floor: (Tile | null)[]): number => {
+    const penalties = [-1, -1, -2, -2, -2, -3, -3];
+    return floor.reduce((total, tile, index) => {
+      if (tile) {
+        return total + penalties[index];
+      }
+      return total;
+    }, 0);
+  };
+
+  const handleCalculateScores = () => {
+    setGameState(
+      produce((draft) => {
+        // Calculate scores for each player
+        draft.players.forEach((player) => {
+          let roundScore = 0;
+
+          // Score wall
+          roundScore += calculateWallScore(player.wall);
+
+          // Apply floor penalties
+          roundScore += calculateFloorPenalty(player.floor);
+
+          // Update player's score
+          player.score += Math.max(0, roundScore); // Score can't go below 0
+
+          // Clear floor
+          const floorTiles = player.floor.filter(
+            (tile): tile is Tile => tile !== null
+          );
+          draft.discardPile.push(...floorTiles);
+          player.floor = Array(7).fill(null);
+        });
+
+        // Move to playing phase and prepare for next round
+        draft.phase = "playing";
+        draft.hasFirstPlayerBeenMoved = false;
+
+        // If tile bag is empty, move all discarded tiles to the bag
+        if (draft.tileBag.length === 0) {
+          draft.tileBag = [...draft.discardPile];
+          draft.discardPile = [];
+
+          // Shuffle the bag
+          for (let i = draft.tileBag.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [draft.tileBag[i], draft.tileBag[j]] = [
+              draft.tileBag[j],
+              draft.tileBag[i],
+            ];
+          }
+        }
+
+        // Fill factories for the next round
+        for (
+          let factoryIndex = 0;
+          factoryIndex < NUM_FACTORIES;
+          factoryIndex++
+        ) {
+          const factoryTiles: Tile[] = [];
+          for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
+            if (draft.tileBag.length > 0) {
+              const randomIndex = Math.floor(
+                Math.random() * draft.tileBag.length
+              );
+              factoryTiles.push(draft.tileBag[randomIndex]);
+              draft.tileBag.splice(randomIndex, 1);
+            }
+          }
+          draft.factories[factoryIndex] = factoryTiles;
+        }
+      })
+    );
+  };
+
   return (
     <div
       className="game"
@@ -567,6 +783,38 @@ const Game: React.FC = () => {
         >
           Test Distribution
         </button>
+        {isRoundComplete() && gameState.phase === "playing" && (
+          <button
+            onClick={handleFinishRound}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "#2196F3",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
+            }}
+          >
+            Finish Round
+          </button>
+        )}
+        {gameState.phase === "scoring" && (
+          <button
+            onClick={handleCalculateScores}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "#9C27B0",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
+            }}
+          >
+            Calculate Scores
+          </button>
+        )}
       </div>
 
       <div style={{ display: "flex", alignItems: "flex-start", gap: "40px" }}>
@@ -712,6 +960,58 @@ const Game: React.FC = () => {
                       }}
                     />
                   ))}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Discard Pile Display */}
+        <div
+          className="discard-pile"
+          style={{
+            border: "2px solid #999",
+            borderRadius: "8px",
+            padding: "15px",
+            backgroundColor: "white",
+            width: "120px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: "bold",
+              marginBottom: "10px",
+              textAlign: "center",
+              color: "black",
+            }}
+          >
+            Discard Pile ({gameState.discardPile.length})
+          </div>
+          {["blue", "red", "black", "yellow", "white"].map((color) => {
+            const count = gameState.discardPile.filter(
+              (tile) => tile.type === color
+            ).length;
+            return (
+              <div
+                key={color}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "8px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: `var(--${color})`,
+                    border: "1px solid #999",
+                  }}
+                />
+                <span style={{ fontSize: "14px", color: "black" }}>
+                  {count}
+                </span>
               </div>
             );
           })}
