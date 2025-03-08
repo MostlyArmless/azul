@@ -359,21 +359,6 @@ const Game: React.FC = () => {
         })}
       </div>
 
-      {/* End Turn Button */}
-      <button
-        onClick={handleEndTurn}
-        disabled={!gameState.hasPlacedTile}
-        style={{
-          padding: "10px 20px",
-          marginBottom: "20px",
-          fontSize: "1.1em",
-          cursor: gameState.hasPlacedTile ? "pointer" : "default",
-          opacity: gameState.hasPlacedTile ? 1 : 0.5,
-        }}
-      >
-        End Turn
-      </button>
-
       {/* Player Boards */}
       <div
         className="players"
@@ -401,6 +386,8 @@ const Game: React.FC = () => {
             }
             selectedTile={gameState.selectedTile}
             selectedColor={gameState.selectedColor}
+            onEndTurn={handleEndTurn}
+            canEndTurn={gameState.hasPlacedTile}
           />
         ))}
       </div>

@@ -10,6 +10,8 @@ interface PlayerBoardProps {
   onHoldingAreaTileClick: (tile: Tile) => void;
   selectedTile: Tile | null;
   selectedColor: TileType | null;
+  onEndTurn: () => void;
+  canEndTurn: boolean;
 }
 
 const PlayerBoard: React.FC<PlayerBoardProps> = ({
@@ -21,6 +23,8 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
   onHoldingAreaTileClick,
   selectedTile,
   selectedColor,
+  onEndTurn,
+  canEndTurn,
 }) => {
   return (
     <div
@@ -32,6 +36,9 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         minWidth: "500px",
         opacity: isActive ? 1 : 0.7,
         position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
       }}
     >
       <h2
@@ -193,6 +200,23 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
       >
         Score: {board.score}
       </div>
+
+      {/* End Turn Button - only show for active player */}
+      {isActive && (
+        <button
+          onClick={onEndTurn}
+          disabled={!canEndTurn}
+          style={{
+            padding: "10px 20px",
+            marginTop: "20px",
+            fontSize: "1.1em",
+            cursor: canEndTurn ? "pointer" : "default",
+            opacity: canEndTurn ? 1 : 0.5,
+          }}
+        >
+          End Turn
+        </button>
+      )}
     </div>
   );
 };
