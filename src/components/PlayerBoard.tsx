@@ -249,19 +249,39 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           position: "relative",
         }}
       >
-        {board.floor.map((tile, index) => (
-          <div
-            key={index}
-            style={{
-              width: "40px",
-              height: "40px",
-              border: "1px solid #999",
-              backgroundColor: tile?.type
-                ? `var(--${tile.type})`
-                : "var(--empty)",
-            }}
-          />
-        ))}
+        {board.floor.map((tile, index) => {
+          const penalties = [-1, -1, -2, -2, -2, -3, -3];
+          return (
+            <div
+              key={index}
+              style={{
+                width: "40px",
+                height: "40px",
+                border: "1px solid #999",
+                backgroundColor: tile?.type
+                  ? `var(--${tile.type})`
+                  : "var(--empty)",
+                position: "relative",
+              }}
+            >
+              {!tile && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    opacity: 0.5,
+                    fontSize: "14px",
+                    color: "#666",
+                  }}
+                >
+                  {penalties[index]}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div
