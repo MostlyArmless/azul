@@ -27,8 +27,10 @@ h1 {
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0.5rem;
   text-align: center;
+  background-color: #444;
+  min-height: 100vh;
 }
 
 .logo {
@@ -40,4 +42,194 @@ h1 {
 
 .card {
   padding: 2em;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .app {
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #root {
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .game {
+    padding: 0 !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  h1 {
+    margin: 0 0 5px 0;
+    font-size: 24px;
+  }
+
+  .game > div:first-child {
+    margin-bottom: 10px;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    align-items: flex-start !important;
+  }
+
+  .factories-container {
+    transform: scale(0.6);
+    margin: 0 auto;
+    height: 180px !important;
+    margin-bottom: 10px !important;
+    order: 0 !important;
+  }
+
+  /* Game controls container */
+  .game > div:first-child > div:nth-child(2) {
+    order: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .players {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 5px !important;
+    margin: 0 !important;
+    justify-content: center;
+    width: 100%;
+    padding: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow: visible !important;
+    max-width: 100% !important;
+  }
+
+  .player-board {
+    margin: 0 !important;
+    padding: 5px !important;
+    min-width: unset !important;
+    width: 95% !important;
+    max-width: 95% !important;
+    transform: none !important;
+    transform-origin: center center;
+  }
+
+  .player-board h2 {
+    margin: 5px 0 !important;
+    font-size: 1.2em !important;
+  }
+
+  .board-container {
+    gap: 5px !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    transform: scale(0.8) !important;
+    transform-origin: center center !important;
+    margin: 5px 0 0 0 !important;
+  }
+
+  .holding-area {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 90px !important;
+    margin-bottom: 5px;
+    padding: 3px !important;
+    transform: scale(0.7) !important;
+    z-index: 10 !important;
+  }
+
+  /* Hide tile bag and discard pile on mobile */
+  .tile-bag,
+  .discard-pile {
+    display: none !important;
+  }
+
+  /* Compact floor area */
+  .floor {
+    margin-top: 0 !important;
+    padding: 2px !important;
+    transform: scale(0.8) !important;
+    transform-origin: center center !important;
+  }
+
+  /* Reduce score text size */
+  .score-text {
+    margin-top: 5px !important;
+    font-size: 1em !important;
+    display: inline-block !important;
+    margin-right: 10px !important;
+  }
+
+  /* Compact buttons */
+  button {
+    padding: 4px 8px !important;
+    margin: 2px !important;
+    font-size: 0.9em !important;
+  }
+
+  /* Player board bottom row */
+  .player-board > div:last-child {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-top: 5px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .factories-container {
+    transform: scale(0.45);
+    height: 160px !important;
+    margin-bottom: 15px !important;
+  }
+
+  .players {
+    padding: 0;
+    gap: 5px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-direction: column !important;
+  }
+
+  .player-board {
+    padding: 2px !important;
+    margin: 0 !important;
+    width: 95% !important;
+    max-width: 95% !important;
+    transform: none !important;
+  }
+
+  .board-container {
+    gap: 2px !important;
+    transform: scale(0.7) !important;
+    transform-origin: center center !important;
+    margin: 3px 0 0 0 !important;
+  }
+
+  .holding-area {
+    top: 0 !important;
+    left: 0 !important;
+    width: 80px !important;
+    transform: scale(0.6) !important;
+    padding: 2px !important;
+  }
+
+  .floor {
+    transform: scale(0.7) !important;
+    transform-origin: center center !important;
+    margin-top: 0 !important;
+  }
+
+  h1 {
+    font-size: 18px;
+    margin: 0 0 2px 0;
+  }
 }

@@ -513,7 +513,7 @@ const Game: React.FC = () => {
               ) {
                 // Fill the row with tiles from right to left
                 for (let i = 0; i < tiles.length; i++) {
-                  row[row.length - 1 - i] = tiles[i];
+                  row[row.length - 1 - i] = tiles[i] as any;
                 }
                 break;
               }
@@ -702,123 +702,30 @@ const Game: React.FC = () => {
     <div
       className="game"
       style={{
-        padding: "20px",
+        padding: "20px 10px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        width: "100%",
+        maxWidth: "100%",
+        overflowX: "hidden",
+        margin: "0 auto",
       }}
     >
+      <h1>Azul</h1>
+
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+          flexDirection: "row",
+          alignItems: "flex-start",
+          justifyContent: "center",
           gap: "20px",
           marginBottom: "20px",
+          width: "100%",
+          flexWrap: "wrap",
         }}
       >
-        <h1>Azul</h1>
-        <button
-          onClick={handleTestDistribution}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: COLORS.BUTTON_PRIMARY,
-            color: COLORS.BUTTON_TEXT,
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "14px",
-          }}
-        >
-          Test Distribution
-        </button>
-        {gameState.phase === GamePhase.ReadyToWallTile && (
-          <button
-            onClick={handleWallTiling}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: COLORS.BUTTON_SECONDARY,
-              color: COLORS.BUTTON_TEXT,
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "14px",
-            }}
-          >
-            Tile the Wall
-          </button>
-        )}
-        {gameState.phase === GamePhase.DoneWallTiling && (
-          <button
-            onClick={handleStartNextRound}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: COLORS.BUTTON_SECONDARY,
-              color: COLORS.BUTTON_TEXT,
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "14px",
-            }}
-          >
-            Start Next Round
-          </button>
-        )}
-      </div>
-
-      <div style={{ display: "flex", alignItems: "flex-start", gap: "40px" }}>
-        {/* Tile Bag Display */}
-        <div
-          className="tile-bag"
-          style={{
-            border: `2px solid ${COLORS.BORDER}`,
-            borderRadius: "8px",
-            padding: "15px",
-            backgroundColor: COLORS.BUTTON_BG,
-            width: "120px",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "14px",
-              fontWeight: "bold",
-              marginBottom: "10px",
-              textAlign: "center",
-              color: "black",
-            }}
-          >
-            Tile Bag ({gameState.tileBag.length})
-          </div>
-          {["blue", "red", "black", "yellow", "white"].map((color) => {
-            const count = gameState.tileBag.filter(
-              (tile) => tile.type === color
-            ).length;
-            return (
-              <div
-                key={color}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  marginBottom: "8px",
-                }}
-              >
-                <div
-                  style={{
-                    width: "20px",
-                    height: "20px",
-                    backgroundColor: `var(--${color})`,
-                    border: `1px solid ${COLORS.BORDER}`,
-                  }}
-                />
-                <span style={{ fontSize: "14px", color: "black" }}>
-                  {count}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
         {/* Factories */}
         <div
           className="factories-container"
@@ -826,7 +733,7 @@ const Game: React.FC = () => {
             position: "relative",
             width: "400px",
             height: "400px",
-            marginBottom: "20px",
+            marginBottom: "30px",
           }}
         >
           {/* Central Pot */}
@@ -914,6 +821,116 @@ const Game: React.FC = () => {
           })}
         </div>
 
+        {/* Game Controls */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            alignItems: "center",
+          }}
+        >
+          <button
+            onClick={handleTestDistribution}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: COLORS.BUTTON_PRIMARY,
+              color: COLORS.BUTTON_TEXT,
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
+            }}
+          >
+            Test Distribution
+          </button>
+          {gameState.phase === GamePhase.ReadyToWallTile && (
+            <button
+              onClick={handleWallTiling}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: COLORS.BUTTON_SECONDARY,
+                color: COLORS.BUTTON_TEXT,
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "14px",
+              }}
+            >
+              Tile the Wall
+            </button>
+          )}
+          {gameState.phase === GamePhase.DoneWallTiling && (
+            <button
+              onClick={handleStartNextRound}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: COLORS.BUTTON_SECONDARY,
+                color: COLORS.BUTTON_TEXT,
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "14px",
+              }}
+            >
+              Start Next Round
+            </button>
+          )}
+        </div>
+
+        {/* Tile Bag Display */}
+        <div
+          className="tile-bag"
+          style={{
+            border: `2px solid ${COLORS.BORDER}`,
+            borderRadius: "8px",
+            padding: "15px",
+            backgroundColor: COLORS.BUTTON_BG,
+            width: "120px",
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: "bold",
+              marginBottom: "10px",
+              textAlign: "center",
+              color: "black",
+            }}
+          >
+            Tile Bag ({gameState.tileBag.length})
+          </div>
+          {["blue", "red", "black", "yellow", "white"].map((color) => {
+            const count = gameState.tileBag.filter(
+              (tile) => tile.type === color
+            ).length;
+            return (
+              <div
+                key={color}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "8px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: `var(--${color})`,
+                    border: `1px solid ${COLORS.BORDER}`,
+                  }}
+                />
+                <span style={{ fontSize: "14px", color: "black" }}>
+                  {count}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Discard Pile Display */}
         <div
           className="discard-pile"
@@ -976,31 +993,46 @@ const Game: React.FC = () => {
           flexWrap: "nowrap",
           justifyContent: "center",
           width: "100%",
-          overflowX: "auto",
+          maxWidth: "100%",
+          overflowX: "hidden",
+          alignItems: "center",
+          margin: "0 auto",
+          boxSizing: "border-box",
+          padding: "0 10px",
+          flexDirection: "column",
         }}
       >
-        {gameState.players.map((board, index) => (
-          <PlayerBoard
-            key={index}
-            board={board}
-            playerIndex={index}
-            isActive={index === gameState.currentPlayer}
-            onStaircaseRowClick={(rowIndex) =>
-              handleStaircaseRowClick(index, rowIndex)
-            }
-            onFloorClick={() => handleFloorClick(index)}
-            onHoldingAreaTileClick={(tile) =>
-              handleHoldingAreaTileClick(index, tile)
-            }
-            onResetPlacement={() => handleResetPlacement(index)}
-            onResetTurn={() => handleResetTurn(index)}
-            selectedTile={gameState.selectedTile}
-            selectedColor={gameState.selectedColor}
-            onEndTurn={handleEndTurn}
-            canEndTurn={gameState.hasPlacedTile}
-            hasFirstPlayerMarker={index === gameState.firstPlayerMarkerIndex}
-          />
-        ))}
+        {/* Sort player boards to show current player first */}
+        {[...gameState.players]
+          .map((board, index) => ({ board, index }))
+          .sort((a, b) => {
+            // Current player comes first
+            if (a.index === gameState.currentPlayer) return -1;
+            if (b.index === gameState.currentPlayer) return 1;
+            return a.index - b.index;
+          })
+          .map(({ board, index }) => (
+            <PlayerBoard
+              key={index}
+              board={board}
+              playerIndex={index}
+              isActive={index === gameState.currentPlayer}
+              onStaircaseRowClick={(rowIndex) =>
+                handleStaircaseRowClick(index, rowIndex)
+              }
+              onFloorClick={() => handleFloorClick(index)}
+              onHoldingAreaTileClick={(tile) =>
+                handleHoldingAreaTileClick(index, tile)
+              }
+              onResetPlacement={() => handleResetPlacement(index)}
+              onResetTurn={() => handleResetTurn(index)}
+              selectedTile={gameState.selectedTile}
+              selectedColor={gameState.selectedColor}
+              onEndTurn={handleEndTurn}
+              canEndTurn={gameState.hasPlacedTile}
+              hasFirstPlayerMarker={index === gameState.firstPlayerMarkerIndex}
+            />
+          ))}
       </div>
     </div>
   );

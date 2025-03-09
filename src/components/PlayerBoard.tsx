@@ -45,18 +45,22 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
     <div
       className="player-board"
       style={{
-        margin: "20px",
-        padding: "20px",
+        margin: "10px 0",
+        padding: "10px",
         border: `2px solid ${
           isActive ? COLORS.ACTIVE_BORDER : COLORS.INACTIVE_BORDER
         }`,
-        minWidth: "500px",
+        minWidth: "300px",
+        maxWidth: "100%",
+        width: "100%",
         opacity: isActive ? 1 : 0.7,
         position: "relative",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         backgroundColor: COLORS.CARD_BG,
+        boxSizing: "border-box",
+        overflow: "hidden",
       }}
     >
       {/* Turn Reset Button */}
@@ -105,7 +109,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
       <h2
         style={{
           textAlign: "center",
-          marginBottom: "20px",
+          marginBottom: "10px",
           fontSize: "1.5em",
           color: COLORS.TEXT,
         }}
@@ -120,16 +124,16 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           style={{
             display: "flex",
             flexWrap: "wrap",
-            gap: "4px",
-            padding: "10px",
+            gap: "2px",
+            padding: "5px",
             border: `2px solid ${COLORS.BORDER}`,
             borderRadius: "8px",
             position: "absolute",
-            top: "20px",
-            left: "20px",
-            width: "120px",
+            top: "5px",
+            left: "5px",
+            width: "100px",
             backgroundColor: COLORS.CARD_BG,
-            zIndex: 1,
+            zIndex: 10,
           }}
         >
           {board.holdingArea.map((tile, index) => (
@@ -222,53 +226,58 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
 
       <div
         className="board-container"
-        style={{ display: "flex", gap: "40px", justifyContent: "center" }}
+        style={{
+          display: "flex",
+          gap: "20px",
+          justifyContent: "center",
+          width: "100%",
+          flexWrap: "nowrap",
+          boxSizing: "border-box",
+          marginBottom: "10px",
+        }}
       >
         {/* Staircase */}
-        <div style={{ position: "relative", width: "240px", height: "220px" }}>
-          <div
-            className="staircase"
-            style={{
-              position: "relative",
-              backgroundColor: COLORS.CARD_BG,
-              width: "100%",
-              height: "100%",
-            }}
-          >
-            {board.staircase.map((row, rowIndex) => (
-              <div
-                key={rowIndex}
-                onClick={() => isActive && onStaircaseRowClick(rowIndex)}
-                style={{
-                  position: "absolute",
-                  display: "flex",
-                  gap: "0",
-                  right: "0",
-                  top: `${rowIndex * (40 + 2)}px`,
-                  cursor: isActive ? "pointer" : "default",
-                }}
-              >
-                {Array(rowIndex + 1)
-                  .fill(null)
-                  .map((_, cellIndex) => (
-                    <div
-                      key={cellIndex}
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        border: row[cellIndex]?.type
-                          ? `2px solid ${COLORS.DARK_BORDER}`
-                          : `2px dashed ${COLORS.BORDER}`,
-                        backgroundColor: row[cellIndex]?.type
-                          ? `var(--${row[cellIndex]?.type})`
-                          : COLORS.EMPTY_SPACE,
-                        marginLeft: "-2px", // Compensate for border overlap
-                      }}
-                    />
-                  ))}
-              </div>
-            ))}
-          </div>
+        <div
+          style={{
+            position: "relative",
+            width: "202px",
+            height: "202px",
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: "column",
+            gap: "2px",
+            alignItems: "flex-end",
+          }}
+        >
+          {board.staircase.map((row, rowIndex) => (
+            <div
+              key={rowIndex}
+              onClick={() => isActive && onStaircaseRowClick(rowIndex)}
+              style={{
+                display: "flex",
+                gap: "2px",
+                cursor: isActive ? "pointer" : "default",
+              }}
+            >
+              {Array(rowIndex + 1)
+                .fill(null)
+                .map((_, cellIndex) => (
+                  <div
+                    key={cellIndex}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      border: row[cellIndex]?.type
+                        ? `2px solid ${COLORS.DARK_BORDER}`
+                        : `2px dashed ${COLORS.BORDER}`,
+                      backgroundColor: row[cellIndex]?.type
+                        ? `var(--${row[cellIndex]?.type})`
+                        : COLORS.EMPTY_SPACE,
+                    }}
+                  />
+                ))}
+            </div>
+          ))}
         </div>
 
         {/* Wall */}
@@ -313,13 +322,16 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         style={{
           display: "flex",
           gap: "2px",
-          marginTop: "20px",
+          marginTop: "5px",
           border: `1px solid ${COLORS.BORDER}`,
           padding: "5px",
           justifyContent: "center",
           cursor: isActive ? "pointer" : "default",
           position: "relative",
           backgroundColor: COLORS.BUTTON_BG,
+          flexWrap: "wrap",
+          maxWidth: "100%",
+          boxSizing: "border-box",
         }}
       >
         {board.floor.map((tile, index) => {
@@ -359,49 +371,50 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         })}
       </div>
 
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: "10px",
-          fontSize: "1.2em",
-          color: COLORS.TEXT,
-        }}
-      >
-        Score: {board.score}
-      </div>
-
-      {/* Bottom row container for First Player Marker and End Turn button */}
+      {/* Bottom row container for Score, First Player Marker and End Turn button */}
       <div
         style={{
           display: "flex",
           width: "100%",
           justifyContent: "space-between",
           alignItems: "center",
-          marginTop: "20px",
-          padding: "0 20px",
+          marginTop: "5px",
+          padding: "0 10px",
         }}
       >
-        {/* First Player Marker */}
-        {hasFirstPlayerMarker && (
+        {/* Left side: First Player Marker and Score */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* First Player Marker */}
+          {hasFirstPlayerMarker && (
+            <div
+              style={{
+                width: "30px",
+                height: "30px",
+                backgroundColor: COLORS.FIRST_PLAYER_BG,
+                border: `1px solid ${COLORS.BORDER}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                fontWeight: "bold",
+                fontSize: "18px",
+              }}
+            >
+              1
+            </div>
+          )}
+
+          {/* Score */}
           <div
+            className="score-text"
             style={{
-              width: "40px",
-              height: "40px",
-              backgroundColor: COLORS.FIRST_PLAYER_BG,
-              border: `1px solid ${COLORS.BORDER}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontWeight: "bold",
-              fontSize: "24px",
+              fontSize: "1.2em",
+              color: COLORS.TEXT,
             }}
           >
-            1
+            Score: {board.score}
           </div>
-        )}
-        {/* Spacer div when no marker to maintain layout */}
-        {!hasFirstPlayerMarker && <div style={{ width: "40px" }} />}
+        </div>
 
         {/* End Turn Button - only show for active player */}
         {isActive && (
@@ -409,8 +422,8 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
             onClick={onEndTurn}
             disabled={!canEndTurn}
             style={{
-              padding: "10px 20px",
-              fontSize: "1.1em",
+              padding: "8px 16px",
+              fontSize: "1em",
               cursor: canEndTurn ? "pointer" : "default",
               opacity: canEndTurn ? 1 : 0.5,
             }}
