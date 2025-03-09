@@ -611,18 +611,45 @@ const Game: React.FC = () => {
   const handleTestDistribution = () => {
     setGameState(
       produce((draft) => {
-        // Collect all tiles from factories and pot
+        // Step 1: Collect all tiles from factories and pot
         const allTiles: Tile[] = [];
+
+        // Collect from factories
         draft.factories.forEach((factory) => {
           allTiles.push(...factory);
           factory.length = 0; // Clear factory
         });
+
+        // Collect from pot
         allTiles.push(...draft.pot);
         draft.pot = []; // Clear pot
 
-        // For each player
-        for (let playerIndex = 0; playerIndex < 2; playerIndex++) {
+        // Track the initial count for verification
+        const initialTileCount = allTiles.length;
+        console.log(`Initial tile count: ${initialTileCount}`);
+
+        // Step 2: Split tiles into roughly even piles for each player
+        const playerPiles: Tile[][] = [];
+        const playerCount = draft.players.length;
+
+        // Create empty piles for each player
+        for (let i = 0; i < playerCount; i++) {
+          playerPiles.push([]);
+        }
+
+        // Distribute tiles evenly among players
+        while (allTiles.length > 0) {
+          for (let i = 0; i < playerCount && allTiles.length > 0; i++) {
+            const randomIndex = Math.floor(Math.random() * allTiles.length);
+            const tile = allTiles.splice(randomIndex, 1)[0];
+            playerPiles[i].push(tile);
+          }
+        }
+
+        // Step 3: Distribute tiles to each player's staircase and floor
+        for (let playerIndex = 0; playerIndex < playerCount; playerIndex++) {
           const player = draft.players[playerIndex];
+          const playerTiles = playerPiles[playerIndex];
 
           // Group tiles by color
           const tilesByColor: Record<TileType, Tile[]> = {
@@ -633,39 +660,112 @@ const Game: React.FC = () => {
             white: [],
           };
 
-          // Distribute tiles randomly between players
-          const playerTiles = allTiles.splice(
-            0,
-            Math.floor(allTiles.length / (2 - playerIndex))
-          );
           playerTiles.forEach((tile) => {
             tilesByColor[tile.type].push(tile);
           });
 
-          // Place tiles in staircase rows
-          Object.entries(tilesByColor).forEach(([color, tiles]) => {
-            if (tiles.length === 0) return;
+          // Track tiles that have been placed
+          let placedTiles: Tile[] = [];
 
-            // Find an empty row that can fit these tiles and doesn't have this color in the wall
+          // First, try to place tiles in staircase rows
+          for (const color of Object.keys(tilesByColor) as TileType[]) {
+            const tiles = tilesByColor[color];
+            if (tiles.length === 0) continue;
+
+            // Try to find a row that already has this color
+            let foundExistingRow = false;
             for (
               let rowIndex = 0;
               rowIndex < player.staircase.length;
               rowIndex++
             ) {
               const row = player.staircase[rowIndex];
-              if (
-                row.every((cell) => cell === null) &&
-                tiles.length <= row.length &&
-                isColorAllowedInRow(player.wall, rowIndex, color as TileType)
-              ) {
-                // Fill the row with tiles from right to left
-                for (let i = 0; i < tiles.length; i++) {
-                  row[row.length - 1 - i] = tiles[i] as any;
+
+              // Check if row already has tiles of this color
+              const existingTiles = row.filter((t): t is Tile => t !== null);
+              if (existingTiles.length > 0 && existingTiles[0].type === color) {
+                // Row has tiles of this color, add more if there's space
+                const emptySpaces = row.length - existingTiles.length;
+                const tilesToAdd = Math.min(emptySpaces, tiles.length);
+
+                if (
+                  tilesToAdd > 0 &&
+                  isColorAllowedInRow(player.wall, rowIndex, color)
+                ) {
+                  // Add tiles to this row
+                  for (let i = 0; i < tilesToAdd; i++) {
+                    const tile = tiles.shift()!;
+                    placedTiles.push(tile);
+
+                    // Find the first empty spot from the right
+                    for (let j = row.length - 1; j >= 0; j--) {
+                      if (row[j] === null) {
+                        (row[j] as any) = tile;
+                        break;
+                      }
+                    }
+                  }
+                  foundExistingRow = true;
+                  break;
                 }
-                break;
               }
             }
+
+            // If we didn't find an existing row with this color, try to find an empty row
+            if (!foundExistingRow && tiles.length > 0) {
+              for (
+                let rowIndex = 0;
+                rowIndex < player.staircase.length;
+                rowIndex++
+              ) {
+                const row = player.staircase[rowIndex];
+
+                // Check if row is empty and color is allowed in this row
+                if (
+                  row.every((t) => t === null) &&
+                  isColorAllowedInRow(player.wall, rowIndex, color)
+                ) {
+                  // Row is empty, add tiles
+                  const tilesToAdd = Math.min(row.length, tiles.length);
+
+                  // Add tiles to this row from right to left
+                  for (let i = 0; i < tilesToAdd; i++) {
+                    const tile = tiles.shift()!;
+                    placedTiles.push(tile);
+                    (row[row.length - 1 - i] as any) = tile;
+                  }
+                  break;
+                }
+              }
+            }
+          }
+
+          // Collect any remaining tiles from all colors
+          const remainingTiles: Tile[] = [];
+          Object.values(tilesByColor).forEach((colorTiles) => {
+            remainingTiles.push(...colorTiles);
           });
+
+          // Place remaining tiles in floor from left to right
+          for (
+            let i = 0;
+            i < remainingTiles.length && i < player.floor.length;
+            i++
+          ) {
+            const tile = remainingTiles[i];
+            placedTiles.push(tile);
+            (player.floor[i] as any) = tile;
+          }
+
+          // Verify that all tiles for this player have been placed
+          console.log(
+            `Player ${playerIndex}: ${placedTiles.length}/${playerPiles[playerIndex].length} tiles placed`
+          );
+          if (placedTiles.length !== playerPiles[playerIndex].length) {
+            console.error(
+              `Tile loss detected for player ${playerIndex}! ${placedTiles.length} placed vs ${playerPiles[playerIndex].length} allocated`
+            );
+          }
         }
 
         // Reset turn state
