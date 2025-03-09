@@ -22,6 +22,7 @@ interface PlayerBoardProps {
   onEndTurn: () => void;
   canEndTurn: boolean;
   hasFirstPlayerMarker?: boolean;
+  style?: React.CSSProperties;
 }
 
 const PlayerBoard: React.FC<PlayerBoardProps> = ({
@@ -37,6 +38,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
   onEndTurn,
   canEndTurn,
   hasFirstPlayerMarker = false,
+  style,
 }) => {
   const [isResetHovered, setIsResetHovered] = useState(false);
   const [isTurnResetHovered, setIsTurnResetHovered] = useState(false);
@@ -61,6 +63,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         backgroundColor: COLORS.CARD_BG,
         boxSizing: "border-box",
         overflow: "hidden",
+        ...style,
       }}
     >
       {/* Turn Reset Button */}

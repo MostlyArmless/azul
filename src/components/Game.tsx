@@ -14,6 +14,35 @@ import PlayerBoard from "./PlayerBoard";
 const INITIAL_TILES_PER_FACTORY = 4;
 const NUM_FACTORIES = 5;
 
+// Hook to get window dimensions
+const useWindowSize = () => {
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    // Handler to call on window resize
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    // Add event listener
+    window.addEventListener("resize", handleResize);
+
+    // Call handler right away so state gets updated with initial window size
+    handleResize();
+
+    // Remove event listener on cleanup
+    return () => window.removeEventListener("resize", handleResize);
+  }, []); // Empty array ensures that effect is only run on mount and unmount
+
+  return windowSize;
+};
+
 const createEmptyPlayerBoard = (): PlayerBoardType => ({
   wall: Array(5)
     .fill(null)
@@ -67,6 +96,8 @@ const Game: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(
     createInitialGameState()
   );
+
+  const windowSize = useWindowSize();
 
   useEffect(() => {
     // Fill factories at the start of the game
@@ -1111,7 +1142,7 @@ const Game: React.FC = () => {
         style={{
           display: "flex",
           gap: "20px",
-          flexWrap: "nowrap",
+          flexWrap: "wrap",
           justifyContent: "center",
           width: "100%",
           maxWidth: "100%",
@@ -1120,7 +1151,9 @@ const Game: React.FC = () => {
           margin: "0 auto",
           boxSizing: "border-box",
           padding: "0 10px",
-          flexDirection: "column",
+          // Use row direction on desktop (screens wider than 1024px)
+          // and column direction on mobile
+          flexDirection: windowSize.width > 1024 ? "row" : "column",
         }}
       >
         {/* Sort player boards to show current player first */}
@@ -1152,6 +1185,10 @@ const Game: React.FC = () => {
               onEndTurn={handleEndTurn}
               canEndTurn={gameState.hasPlacedTile}
               hasFirstPlayerMarker={index === gameState.firstPlayerMarkerIndex}
+              style={{
+                width: windowSize.width > 1024 ? "calc(50% - 20px)" : "100%",
+                maxWidth: windowSize.width > 1024 ? "600px" : "100%",
+              }}
             />
           ))}
       </div>
