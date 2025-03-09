@@ -570,132 +570,66 @@ const Game: React.FC = () => {
     );
   };
 
-  const handleFinishRound = () => {
-    setGameState(
-      produce((draft) => {
-        // Move to wall tiling phase
-        draft.phase = "wall_tiling";
-
-        // Process each player's staircase
-        draft.players.forEach((player) => {
-          // For each row in the staircase
-          player.staircase.forEach((row, rowIndex) => {
-            // Check if row is full
-            if (row.every((cell) => cell !== null)) {
-              // Find the color of tiles in this row (they're all the same)
-              const firstTile = row[0];
-              if (!firstTile) return;
-
-              const tileType = firstTile.type;
-              const wallPattern = WALL_PATTERN[rowIndex];
-              if (!wallPattern) return;
-
-              const wallColIndex = wallPattern.indexOf(tileType);
-              if (wallColIndex === -1) return;
-
-              // Move one tile to the wall
-              const wallRow = player.wall[rowIndex];
-              if (!wallRow) return;
-
-              // Create and place the new tile
-              wallRow[wallColIndex] = { type: tileType };
-
-              // Move remaining tiles to the discard pile
-              const remainingTiles = row
-                .filter((tile): tile is Tile => tile !== null)
-                .slice(1);
-              draft.discardPile.push(...remainingTiles);
-
-              // Clear the staircase row
-              player.staircase[rowIndex] = Array(row.length).fill(null);
-            }
-          });
-        });
-
-        // Move to scoring phase
-        draft.phase = "scoring";
-      })
-    );
-  };
-
-  const calculateWallScore = (wall: (Tile | null)[][]): number => {
+  const calculateWallScore = (
+    wall: (Tile | null)[][],
+    newTilePositions: { row: number; col: number }[]
+  ): number => {
     let score = 0;
-    const counted = Array(5)
-      .fill(null)
-      .map(() => Array(5).fill(false));
 
-    // Score horizontal lines
-    for (let row = 0; row < wall.length; row++) {
-      let lineStart = -1;
-      for (let col = 0; col < wall[row].length; col++) {
-        if (wall[row][col]) {
-          if (lineStart === -1) lineStart = col;
-        } else {
-          if (lineStart !== -1) {
-            const lineLength = col - lineStart;
-            if (lineLength > 1) {
-              // Mark tiles as counted and add points
-              for (let i = lineStart; i < col; i++) {
-                counted[row][i] = true;
-              }
-              score += lineLength;
-            }
-            lineStart = -1;
-          }
-        }
-      }
-      // Handle line that ends at the edge
-      if (lineStart !== -1) {
-        const lineLength = wall[row].length - lineStart;
-        if (lineLength > 1) {
-          for (let i = lineStart; i < wall[row].length; i++) {
-            counted[row][i] = true;
-          }
-          score += lineLength;
-        }
-      }
-    }
+    // For each newly placed tile
+    newTilePositions.forEach(({ row, col }) => {
+      let hasHorizontalConnection = false;
+      let hasVerticalConnection = false;
+      let horizontalLength = 1; // Count the tile itself
+      let verticalLength = 1; // Count the tile itself
 
-    // Score vertical lines
-    for (let col = 0; col < wall[0].length; col++) {
-      let lineStart = -1;
-      for (let row = 0; row < wall.length; row++) {
-        if (wall[row][col]) {
-          if (lineStart === -1) lineStart = row;
-        } else {
-          if (lineStart !== -1) {
-            const lineLength = row - lineStart;
-            if (lineLength > 1) {
-              // Mark tiles as counted and add points
-              for (let i = lineStart; i < row; i++) {
-                counted[i][col] = true;
-              }
-              score += lineLength;
-            }
-            lineStart = -1;
-          }
-        }
+      // Check horizontal connections
+      // Look left
+      let leftCol = col - 1;
+      while (leftCol >= 0 && wall[row][leftCol]) {
+        horizontalLength++;
+        hasHorizontalConnection = true;
+        leftCol--;
       }
-      // Handle line that ends at the edge
-      if (lineStart !== -1) {
-        const lineLength = wall.length - lineStart;
-        if (lineLength > 1) {
-          for (let i = lineStart; i < wall.length; i++) {
-            counted[i][col] = true;
-          }
-          score += lineLength;
-        }
+      // Look right
+      let rightCol = col + 1;
+      while (rightCol < wall[row].length && wall[row][rightCol]) {
+        horizontalLength++;
+        hasHorizontalConnection = true;
+        rightCol++;
       }
-    }
 
-    // Score isolated tiles (those not part of any line)
-    for (let row = 0; row < wall.length; row++) {
-      for (let col = 0; col < wall[row].length; col++) {
-        if (wall[row][col] && !counted[row][col]) {
-          score += 1;
+      // Check vertical connections
+      // Look up
+      let upRow = row - 1;
+      while (upRow >= 0 && wall[upRow][col]) {
+        verticalLength++;
+        hasVerticalConnection = true;
+        upRow--;
+      }
+      // Look down
+      let downRow = row + 1;
+      while (downRow < wall.length && wall[downRow][col]) {
+        verticalLength++;
+        hasVerticalConnection = true;
+        downRow++;
+      }
+
+      // Calculate score for this tile
+      if (!hasHorizontalConnection && !hasVerticalConnection) {
+        // Isolated tile
+        score += 1;
+      } else {
+        // Add points for horizontal line if it exists
+        if (hasHorizontalConnection) {
+          score += horizontalLength;
+        }
+        // Add points for vertical line if it exists
+        if (hasVerticalConnection) {
+          score += verticalLength;
         }
       }
-    }
+    });
 
     return score;
   };
@@ -718,7 +652,7 @@ const Game: React.FC = () => {
           let roundScore = 0;
 
           // Score wall
-          roundScore += calculateWallScore(player.wall);
+          roundScore += calculateWallScore(player.wall, []);
 
           // Apply floor penalties
           roundScore += calculateFloorPenalty(player.floor);
@@ -727,6 +661,107 @@ const Game: React.FC = () => {
           player.score += Math.max(0, roundScore); // Score can't go below 0
 
           // Clear floor
+          const floorTiles = player.floor.filter(
+            (tile): tile is Tile => tile !== null
+          );
+          draft.discardPile.push(...floorTiles);
+          player.floor = Array(7).fill(null);
+        });
+
+        // Move to playing phase and prepare for next round
+        draft.phase = "playing";
+        draft.hasFirstPlayerBeenMoved = false;
+
+        // If tile bag is empty, move all discarded tiles to the bag
+        if (draft.tileBag.length === 0) {
+          draft.tileBag = [...draft.discardPile];
+          draft.discardPile = [];
+
+          // Shuffle the bag
+          for (let i = draft.tileBag.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [draft.tileBag[i], draft.tileBag[j]] = [
+              draft.tileBag[j],
+              draft.tileBag[i],
+            ];
+          }
+        }
+
+        // Fill factories for the next round
+        for (
+          let factoryIndex = 0;
+          factoryIndex < NUM_FACTORIES;
+          factoryIndex++
+        ) {
+          const factoryTiles: Tile[] = [];
+          for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
+            if (draft.tileBag.length > 0) {
+              const randomIndex = Math.floor(
+                Math.random() * draft.tileBag.length
+              );
+              factoryTiles.push(draft.tileBag[randomIndex]);
+              draft.tileBag.splice(randomIndex, 1);
+            }
+          }
+          draft.factories[factoryIndex] = factoryTiles;
+        }
+      })
+    );
+  };
+
+  const handleFinishRound = () => {
+    setGameState(
+      produce((draft) => {
+        // Process each player's staircase
+        draft.players.forEach((player) => {
+          const newTilePositions: { row: number; col: number }[] = [];
+
+          // For each row in the staircase
+          player.staircase.forEach((row, rowIndex) => {
+            // Check if row is full
+            if (row.every((cell) => cell !== null)) {
+              // Find the color of tiles in this row (they're all the same)
+              const firstTile = row[0];
+              if (!firstTile) return;
+
+              const tileType = firstTile.type;
+              const wallPattern = WALL_PATTERN[rowIndex];
+              if (!wallPattern) return;
+
+              const wallColIndex = wallPattern.indexOf(tileType);
+              if (wallColIndex === -1) return;
+
+              // Move one tile to the wall
+              const wallRow = player.wall[rowIndex];
+              if (!wallRow) return;
+
+              // Create and place the new tile
+              wallRow[wallColIndex] = { type: tileType };
+
+              // Track the position of the newly placed tile
+              newTilePositions.push({ row: rowIndex, col: wallColIndex });
+
+              // Move remaining tiles to the discard pile
+              const remainingTiles = row
+                .filter((tile): tile is Tile => tile !== null)
+                .slice(1);
+              draft.discardPile.push(...remainingTiles);
+
+              // Clear the staircase row
+              player.staircase[rowIndex] = Array(row.length).fill(null);
+            }
+          });
+
+          // Calculate score for newly placed tiles
+          const roundScore = calculateWallScore(player.wall, newTilePositions);
+
+          // Apply floor penalties
+          const floorPenalty = calculateFloorPenalty(player.floor);
+
+          // Update player's score
+          player.score += Math.max(0, roundScore + floorPenalty);
+
+          // Clear floor and move tiles to discard pile
           const floorTiles = player.floor.filter(
             (tile): tile is Tile => tile !== null
           );
