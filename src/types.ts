@@ -9,7 +9,12 @@ export const WALL_PATTERN: TileType[][] = [
   ["yellow", "red", "black", "white", "blue"],
 ];
 
-export type GamePhase = "playing" | "wall_tiling" | "scoring";
+export enum GamePhase {
+  Playing,
+  ReadyToWallTile,
+  DoneWallTiling,
+  GameOver,
+}
 
 export interface Tile {
   type: TileType;

@@ -33,7 +33,6 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
   onHoldingAreaTileClick,
   onResetPlacement,
   onResetTurn,
-  selectedTile,
   selectedColor,
   onEndTurn,
   canEndTurn,
@@ -57,6 +56,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        backgroundColor: COLORS.CARD_BG,
       }}
     >
       {/* Turn Reset Button */}
@@ -230,7 +230,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
             className="staircase"
             style={{
               position: "relative",
-              backgroundColor: "white",
+              backgroundColor: COLORS.CARD_BG,
               width: "100%",
               height: "100%",
             }}
@@ -290,7 +290,9 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                   style={{
                     width: "40px",
                     height: "40px",
-                    border: `1px solid ${COLORS.BORDER}`,
+                    border: row[cellIndex]?.type
+                      ? `2px solid ${COLORS.DARK_BORDER}`
+                      : `2px dashed ${COLORS.BORDER}`,
                     backgroundColor: cell
                       ? `var(--${cell.type})`
                       : `var(--${patternColor})`,

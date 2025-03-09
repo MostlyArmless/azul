@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { produce } from "immer";
 import {
+  GamePhase,
   GameState,
   PlayerBoard as PlayerBoardType,
   Tile,
   TileType,
-  TileSource,
-  GamePhase,
   WALL_PATTERN,
 } from "../types";
 import { COLORS } from "../constants";
@@ -60,7 +59,7 @@ const createInitialGameState = (): GameState => {
     hasFirstPlayerBeenMoved: false,
     placedTilesThisTurn: [],
     currentTileSource: null,
-    phase: "playing" as GamePhase,
+    phase: GamePhase.Playing,
   };
 };
 
@@ -69,36 +68,8 @@ const Game: React.FC = () => {
     createInitialGameState()
   );
 
-  // Fill factories at the start of the game only
   useEffect(() => {
-    const fillFactories = () => {
-      setGameState(
-        produce((draft) => {
-          // Fill each factory one at a time
-          for (
-            let factoryIndex = 0;
-            factoryIndex < NUM_FACTORIES;
-            factoryIndex++
-          ) {
-            const factoryTiles: Tile[] = [];
-            // Take 4 random tiles for this factory
-            for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
-              if (draft.tileBag.length > 0) {
-                const randomIndex = Math.floor(
-                  Math.random() * draft.tileBag.length
-                );
-                factoryTiles.push(draft.tileBag[randomIndex]);
-                // Remove the selected tile from the bag
-                draft.tileBag.splice(randomIndex, 1);
-              }
-            }
-            draft.factories[factoryIndex] = factoryTiles;
-          }
-        })
-      );
-    };
-
-    // Only fill factories at the start of the game
+    // Fill factories at the start of the game
     if (
       gameState.factories.every((factory) => factory.length === 0) &&
       gameState.pot.length === 0
@@ -106,6 +77,37 @@ const Game: React.FC = () => {
       fillFactories();
     }
   }, []); // Only run once on mount
+
+  useEffect(() => {
+    console.log("Game Phase:", GamePhase[gameState.phase]);
+  }, [gameState.phase]);
+
+  const fillFactories = () => {
+    setGameState(
+      produce((draft) => {
+        // Fill each factory one at a time
+        for (
+          let factoryIndex = 0;
+          factoryIndex < NUM_FACTORIES;
+          factoryIndex++
+        ) {
+          const factoryTiles: Tile[] = [];
+          // Take 4 random tiles for this factory
+          for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
+            if (draft.tileBag.length > 0) {
+              const randomIndex = Math.floor(
+                Math.random() * draft.tileBag.length
+              );
+              factoryTiles.push(draft.tileBag[randomIndex]);
+              // Remove the selected tile from the bag
+              draft.tileBag.splice(randomIndex, 1);
+            }
+          }
+          draft.factories[factoryIndex] = factoryTiles;
+        }
+      })
+    );
+  };
 
   const handleEndTurn = () => {
     setGameState(
@@ -133,45 +135,6 @@ const Game: React.FC = () => {
         draft.placedTilesThisTurn = [];
         draft.currentTileSource = null;
         draft.currentPlayer = (draft.currentPlayer + 1) % 2;
-
-        // Only refill factories if both factories AND pot are empty
-        const allFactoriesEmpty = draft.factories.every(
-          (factory) => factory.length === 0
-        );
-        if (allFactoriesEmpty && draft.pot.length === 0) {
-          // If bag is empty, move all tiles from pot back to bag and shuffle
-          if (draft.tileBag.length === 0) {
-            draft.tileBag = [...draft.pot];
-            draft.pot = [];
-            // Shuffle the bag
-            for (let i = draft.tileBag.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [draft.tileBag[i], draft.tileBag[j]] = [
-                draft.tileBag[j],
-                draft.tileBag[i],
-              ];
-            }
-          }
-
-          // Fill each factory
-          for (
-            let factoryIndex = 0;
-            factoryIndex < NUM_FACTORIES;
-            factoryIndex++
-          ) {
-            const factoryTiles: Tile[] = [];
-            for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
-              if (draft.tileBag.length > 0) {
-                const randomIndex = Math.floor(
-                  Math.random() * draft.tileBag.length
-                );
-                factoryTiles.push(draft.tileBag[randomIndex]);
-                draft.tileBag.splice(randomIndex, 1);
-              }
-            }
-            draft.factories[factoryIndex] = factoryTiles;
-          }
-        }
       })
     );
   };
@@ -238,7 +201,7 @@ const Game: React.FC = () => {
           !isColorAllowedInRow(
             playerBoard.wall,
             rowIndex,
-            draft.selectedTile.type
+            draft?.selectedTile?.type ?? "blue"
           )
         ) {
           return; // Color already exists in wall row
@@ -559,6 +522,7 @@ const Game: React.FC = () => {
         draft.hasPlacedTile = false;
         draft.placedTilesThisTurn = [];
         draft.currentTileSource = null;
+        draft.phase = GamePhase.ReadyToWallTile;
       })
     );
   };
@@ -572,65 +536,45 @@ const Game: React.FC = () => {
 
   const calculateWallScore = (
     wall: (Tile | null)[][],
-    newTilePositions: { row: number; col: number }[]
+    row: number,
+    col: number
   ): number => {
     let score = 0;
+    const tileType = wall[row][col]?.type;
+    if (!tileType) return 0;
 
-    // For each newly placed tile
-    newTilePositions.forEach(({ row, col }) => {
-      let hasHorizontalConnection = false;
-      let hasVerticalConnection = false;
-      let horizontalLength = 1; // Count the tile itself
-      let verticalLength = 1; // Count the tile itself
+    let horizontalLength = 1; // Count the tile itself
+    let verticalLength = 1; // Count the tile itself
 
-      // Check horizontal connections
-      // Look left
-      let leftCol = col - 1;
-      while (leftCol >= 0 && wall[row][leftCol]) {
-        horizontalLength++;
-        hasHorizontalConnection = true;
-        leftCol--;
-      }
-      // Look right
-      let rightCol = col + 1;
-      while (rightCol < wall[row].length && wall[row][rightCol]) {
-        horizontalLength++;
-        hasHorizontalConnection = true;
-        rightCol++;
-      }
+    // use two pointer method to expand left and right from the tile until we hit a non-matching tile or the edge of the wall
+    let left = col - 1;
+    let right = col + 1;
 
-      // Check vertical connections
-      // Look up
-      let upRow = row - 1;
-      while (upRow >= 0 && wall[upRow][col]) {
-        verticalLength++;
-        hasVerticalConnection = true;
-        upRow--;
-      }
-      // Look down
-      let downRow = row + 1;
-      while (downRow < wall.length && wall[downRow][col]) {
-        verticalLength++;
-        hasVerticalConnection = true;
-        downRow++;
-      }
+    while (left >= 0 && wall[row][left]?.type === tileType) {
+      horizontalLength++;
+      left--;
+    }
 
-      // Calculate score for this tile
-      if (!hasHorizontalConnection && !hasVerticalConnection) {
-        // Isolated tile
-        score += 1;
-      } else {
-        // Add points for horizontal line if it exists
-        if (hasHorizontalConnection) {
-          score += horizontalLength;
-        }
-        // Add points for vertical line if it exists
-        if (hasVerticalConnection) {
-          score += verticalLength;
-        }
-      }
-    });
+    while (right < wall[row].length && wall[row][right]?.type === tileType) {
+      horizontalLength++;
+      right++;
+    }
 
+    // use two pointer method to expand up and down from the tile until we hit a non-matching tile or the edge of the wall
+    let up = row - 1;
+    let down = row + 1;
+
+    while (up >= 0 && wall[up][col]?.type === tileType) {
+      verticalLength++;
+      up--;
+    }
+
+    while (down < wall.length && wall[down][col]?.type === tileType) {
+      verticalLength++;
+      down++;
+    }
+
+    score = horizontalLength + verticalLength;
     return score;
   };
 
@@ -644,72 +588,19 @@ const Game: React.FC = () => {
     }, 0);
   };
 
-  const handleCalculateScores = () => {
+  const handleStartNextRound = () => {
+    fillFactories();
+
     setGameState(
       produce((draft) => {
-        // Calculate scores for each player
-        draft.players.forEach((player) => {
-          let roundScore = 0;
-
-          // Score wall
-          roundScore += calculateWallScore(player.wall, []);
-
-          // Apply floor penalties
-          roundScore += calculateFloorPenalty(player.floor);
-
-          // Update player's score
-          player.score += Math.max(0, roundScore); // Score can't go below 0
-
-          // Clear floor
-          const floorTiles = player.floor.filter(
-            (tile): tile is Tile => tile !== null
-          );
-          draft.discardPile.push(...floorTiles);
-          player.floor = Array(7).fill(null);
-        });
-
         // Move to playing phase and prepare for next round
-        draft.phase = "playing";
+        draft.phase = GamePhase.Playing;
         draft.hasFirstPlayerBeenMoved = false;
-
-        // If tile bag is empty, move all discarded tiles to the bag
-        if (draft.tileBag.length === 0) {
-          draft.tileBag = [...draft.discardPile];
-          draft.discardPile = [];
-
-          // Shuffle the bag
-          for (let i = draft.tileBag.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [draft.tileBag[i], draft.tileBag[j]] = [
-              draft.tileBag[j],
-              draft.tileBag[i],
-            ];
-          }
-        }
-
-        // Fill factories for the next round
-        for (
-          let factoryIndex = 0;
-          factoryIndex < NUM_FACTORIES;
-          factoryIndex++
-        ) {
-          const factoryTiles: Tile[] = [];
-          for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
-            if (draft.tileBag.length > 0) {
-              const randomIndex = Math.floor(
-                Math.random() * draft.tileBag.length
-              );
-              factoryTiles.push(draft.tileBag[randomIndex]);
-              draft.tileBag.splice(randomIndex, 1);
-            }
-          }
-          draft.factories[factoryIndex] = factoryTiles;
-        }
       })
     );
   };
 
-  const handleFinishRound = () => {
+  const handleWallTiling = () => {
     setGameState(
       produce((draft) => {
         // Process each player's staircase
@@ -734,9 +625,14 @@ const Game: React.FC = () => {
               // Move one tile to the wall
               const wallRow = player.wall[rowIndex];
               if (!wallRow) return;
-
-              // Create and place the new tile
               wallRow[wallColIndex] = { type: tileType };
+
+              // Immediately calculate the score for that tile
+              player.score += calculateWallScore(
+                player.wall,
+                rowIndex,
+                wallColIndex
+              );
 
               // Track the position of the newly placed tile
               newTilePositions.push({ row: rowIndex, col: wallColIndex });
@@ -752,14 +648,9 @@ const Game: React.FC = () => {
             }
           });
 
-          // Calculate score for newly placed tiles
-          const roundScore = calculateWallScore(player.wall, newTilePositions);
-
           // Apply floor penalties
           const floorPenalty = calculateFloorPenalty(player.floor);
-
-          // Update player's score
-          player.score += Math.max(0, roundScore + floorPenalty);
+          player.score += Math.max(0, player.score + floorPenalty);
 
           // Clear floor and move tiles to discard pile
           const floorTiles = player.floor.filter(
@@ -770,42 +661,8 @@ const Game: React.FC = () => {
         });
 
         // Move to playing phase and prepare for next round
-        draft.phase = "playing";
+        draft.phase = GamePhase.DoneWallTiling;
         draft.hasFirstPlayerBeenMoved = false;
-
-        // If tile bag is empty, move all discarded tiles to the bag
-        if (draft.tileBag.length === 0) {
-          draft.tileBag = [...draft.discardPile];
-          draft.discardPile = [];
-
-          // Shuffle the bag
-          for (let i = draft.tileBag.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [draft.tileBag[i], draft.tileBag[j]] = [
-              draft.tileBag[j],
-              draft.tileBag[i],
-            ];
-          }
-        }
-
-        // Fill factories for the next round
-        for (
-          let factoryIndex = 0;
-          factoryIndex < NUM_FACTORIES;
-          factoryIndex++
-        ) {
-          const factoryTiles: Tile[] = [];
-          for (let i = 0; i < INITIAL_TILES_PER_FACTORY; i++) {
-            if (draft.tileBag.length > 0) {
-              const randomIndex = Math.floor(
-                Math.random() * draft.tileBag.length
-              );
-              factoryTiles.push(draft.tileBag[randomIndex]);
-              draft.tileBag.splice(randomIndex, 1);
-            }
-          }
-          draft.factories[factoryIndex] = factoryTiles;
-        }
       })
     );
   };
@@ -844,9 +701,9 @@ const Game: React.FC = () => {
         >
           Test Distribution
         </button>
-        {isRoundComplete() && gameState.phase === "playing" && (
+        {gameState.phase === GamePhase.ReadyToWallTile && (
           <button
-            onClick={handleFinishRound}
+            onClick={handleWallTiling}
             style={{
               padding: "8px 16px",
               backgroundColor: COLORS.BUTTON_SECONDARY,
@@ -860,12 +717,12 @@ const Game: React.FC = () => {
             Tile the Wall
           </button>
         )}
-        {gameState.phase === "scoring" && (
+        {gameState.phase === GamePhase.DoneWallTiling && (
           <button
-            onClick={handleCalculateScores}
+            onClick={handleStartNextRound}
             style={{
               padding: "8px 16px",
-              backgroundColor: COLORS.BUTTON_TERTIARY,
+              backgroundColor: COLORS.BUTTON_SECONDARY,
               color: COLORS.BUTTON_TEXT,
               border: "none",
               borderRadius: "4px",
@@ -873,7 +730,7 @@ const Game: React.FC = () => {
               fontSize: "14px",
             }}
           >
-            Calculate Scores
+            Start Next Round
           </button>
         )}
       </div>
