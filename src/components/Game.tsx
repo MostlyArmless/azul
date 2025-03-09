@@ -78,6 +78,71 @@ const Game: React.FC = () => {
     }
   }, []); // Only run once on mount
 
+  // Save game state to localStorage
+  const saveGame = () => {
+    // Extract only the necessary state we want to save
+    const savedState = {
+      currentPlayer: gameState.currentPlayer,
+      tileBag: gameState.tileBag,
+      discardPile: gameState.discardPile,
+      phase: gameState.phase,
+      factories: gameState.factories,
+      pot: gameState.pot,
+      firstPlayerMarkerIndex: gameState.firstPlayerMarkerIndex,
+      hasFirstPlayerBeenMoved: gameState.hasFirstPlayerBeenMoved,
+      players: gameState.players.map((player) => ({
+        wall: player.wall,
+        staircase: player.staircase,
+        floor: player.floor,
+        score: player.score,
+        holdingArea: player.holdingArea,
+      })),
+    };
+
+    // Save to localStorage
+    localStorage.setItem("azulGameSave", JSON.stringify(savedState));
+    alert("Game saved successfully!");
+  };
+
+  // Load game state from localStorage
+  const loadGame = () => {
+    const savedGame = localStorage.getItem("azulGameSave");
+
+    if (!savedGame) {
+      alert("No saved game found!");
+      return;
+    }
+
+    try {
+      const savedState = JSON.parse(savedGame);
+
+      // Create a new game state with the saved values
+      setGameState((prevState) => ({
+        ...prevState,
+        currentPlayer: savedState.currentPlayer,
+        tileBag: savedState.tileBag,
+        discardPile: savedState.discardPile,
+        phase: savedState.phase,
+        factories: savedState.factories,
+        pot: savedState.pot,
+        firstPlayerMarkerIndex: savedState.firstPlayerMarkerIndex,
+        hasFirstPlayerBeenMoved: savedState.hasFirstPlayerBeenMoved,
+        players: savedState.players,
+        // Reset temporary state
+        selectedTile: null,
+        hasPlacedTile: false,
+        selectedColor: null,
+        placedTilesThisTurn: [],
+        currentTileSource: null,
+      }));
+
+      alert("Game loaded successfully!");
+    } catch (error) {
+      console.error("Error loading game:", error);
+      alert("Error loading game!");
+    }
+  };
+
   const fillFactories = () => {
     setGameState(
       produce((draft) => {
@@ -713,6 +778,62 @@ const Game: React.FC = () => {
       }}
     >
       <h1>Azul</h1>
+
+      {/* Save/Load Game Buttons */}
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          marginBottom: "15px",
+        }}
+      >
+        <button
+          onClick={saveGame}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: COLORS.BUTTON_BG,
+            border: `1px solid ${COLORS.BORDER}`,
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            color: "black",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = COLORS.BUTTON_HOVER;
+            e.currentTarget.style.transform = "scale(1.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = COLORS.BUTTON_BG;
+            e.currentTarget.style.transform = "scale(1)";
+          }}
+        >
+          Save Game
+        </button>
+        <button
+          onClick={loadGame}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: COLORS.BUTTON_BG,
+            border: `1px solid ${COLORS.BORDER}`,
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            color: "black",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = COLORS.BUTTON_HOVER;
+            e.currentTarget.style.transform = "scale(1.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = COLORS.BUTTON_BG;
+            e.currentTarget.style.transform = "scale(1)";
+          }}
+        >
+          Load Game
+        </button>
+      </div>
 
       <div
         style={{
