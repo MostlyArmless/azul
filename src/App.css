@@ -3,11 +3,12 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
+  background-color: #444;
 }
 
 h1 {
   text-align: center;
-  color: var(--black);
+  color: #fff;
   margin-bottom: 40px;
 }
 

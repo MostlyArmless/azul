@@ -293,24 +293,11 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
                     border: `1px solid ${COLORS.BORDER}`,
                     backgroundColor: cell
                       ? `var(--${cell.type})`
-                      : COLORS.EMPTY_SPACE,
+                      : `var(--${patternColor})`,
                     position: "relative",
+                    opacity: cell ? 1 : 0.15,
                   }}
-                >
-                  {!cell && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: `var(--${patternColor})`,
-                        opacity: 0.15,
-                      }}
-                    />
-                  )}
-                </div>
+                ></div>
               );
             })
           )}

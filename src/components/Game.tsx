@@ -823,6 +823,7 @@ const Game: React.FC = () => {
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           gap: "20px",
           marginBottom: "20px",
@@ -957,7 +958,7 @@ const Game: React.FC = () => {
               flexWrap: "wrap",
               padding: "5px",
               gap: "2px",
-              backgroundColor: COLORS.FACTORY_BG,
+              backgroundColor: COLORS.POT_BG,
               cursor: gameState.pot.length > 0 ? "pointer" : "default",
               opacity: gameState.pot.length > 0 ? 1 : 0.5,
             }}
