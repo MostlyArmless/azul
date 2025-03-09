@@ -107,7 +107,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           textAlign: "center",
           marginBottom: "20px",
           fontSize: "1.5em",
-          color: "#2c3e50",
+          color: COLORS.TEXT,
         }}
       >
         Player {playerIndex + 1}
@@ -122,13 +122,13 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
             flexWrap: "wrap",
             gap: "4px",
             padding: "10px",
-            border: "2px solid #999",
+            border: `2px solid ${COLORS.BORDER}`,
             borderRadius: "8px",
             position: "absolute",
             top: "20px",
             left: "20px",
             width: "120px",
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            backgroundColor: COLORS.CARD_BG,
             zIndex: 1,
           }}
         >

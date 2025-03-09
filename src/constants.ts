@@ -13,4 +13,5 @@ export const COLORS = {
   FIRST_PLAYER_BG: "#333",
   DARK_BORDER: "#666",
   FACTORY_BG: "#d2b48c",
+  CARD_BG: "#bbb"
 } as const; 
