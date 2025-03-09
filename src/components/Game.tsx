@@ -99,6 +99,57 @@ const Game: React.FC = () => {
 
   const windowSize = useWindowSize();
 
+  // Function to count all tiles in the game
+  const countAllTiles = (gameState: GameState): number => {
+    let totalTiles = 0;
+
+    // Count tiles in the bag
+    totalTiles += gameState.tileBag.length;
+
+    // Count tiles in the discard pile
+    totalTiles += gameState.discardPile.length;
+
+    // Count tiles in factories
+    gameState.factories.forEach((factory) => {
+      totalTiles += factory.length;
+    });
+
+    // Count tiles in the pot
+    totalTiles += gameState.pot.length;
+
+    // Count tiles in each player's board
+    gameState.players.forEach((player) => {
+      // Count tiles in staircase
+      player.staircase.forEach((row) => {
+        row.forEach((tile) => {
+          if (tile) totalTiles++;
+        });
+      });
+
+      // Count tiles in wall
+      player.wall.forEach((row) => {
+        row.forEach((tile) => {
+          if (tile) totalTiles++;
+        });
+      });
+
+      // Count tiles in floor
+      player.floor.forEach((tile) => {
+        if (tile) totalTiles++;
+      });
+
+      // Count tiles in holding area
+      player.holdingArea.forEach((tile) => {
+        if (tile) totalTiles++;
+      });
+    });
+
+    // Count selected tile if there is one
+    if (gameState.selectedTile) totalTiles++;
+
+    return totalTiles;
+  };
+
   useEffect(() => {
     // Fill factories at the start of the game
     if (
@@ -808,7 +859,18 @@ const Game: React.FC = () => {
         margin: "0 auto",
       }}
     >
-      <h1>Azul</h1>
+      <h1>
+        Azul{" "}
+        <span
+          style={{
+            fontSize: "0.7em",
+            color: countAllTiles(gameState) === 100 ? "#666" : "#f00",
+            fontWeight: countAllTiles(gameState) === 100 ? "normal" : "bold",
+          }}
+        >
+          (Tiles: {countAllTiles(gameState)}/100)
+        </span>
+      </h1>
 
       {/* Save/Load Game Buttons */}
       <div
@@ -982,20 +1044,22 @@ const Game: React.FC = () => {
             alignItems: "center",
           }}
         >
-          <button
-            onClick={handleTestDistribution}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: COLORS.BUTTON_PRIMARY,
-              color: COLORS.BUTTON_TEXT,
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "14px",
-            }}
-          >
-            Test Distribution
-          </button>
+          {gameState.phase !== GamePhase.DoneWallTiling && (
+            <button
+              onClick={handleTestDistribution}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: COLORS.BUTTON_PRIMARY,
+                color: COLORS.BUTTON_TEXT,
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "14px",
+              }}
+            >
+              Test Distribution
+            </button>
+          )}
           {gameState.phase === GamePhase.ReadyToWallTile && (
             <button
               onClick={handleWallTiling}

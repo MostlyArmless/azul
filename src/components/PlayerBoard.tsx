@@ -48,7 +48,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
       className="player-board"
       style={{
         margin: "10px 0",
-        padding: "10px",
+        padding: "15px",
         border: `2px solid ${
           isActive ? COLORS.ACTIVE_BORDER : COLORS.INACTIVE_BORDER
         }`,
@@ -62,7 +62,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         alignItems: "center",
         backgroundColor: COLORS.CARD_BG,
         boxSizing: "border-box",
-        overflow: "hidden",
+        overflow: "visible",
         ...style,
       }}
     >
@@ -231,12 +231,13 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
         className="board-container"
         style={{
           display: "flex",
-          gap: "20px",
+          gap: "10px",
           justifyContent: "center",
           width: "100%",
           flexWrap: "nowrap",
           boxSizing: "border-box",
           marginBottom: "10px",
+          padding: "0 5px",
         }}
       >
         {/* Staircase */}
@@ -250,6 +251,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
             flexDirection: "column",
             gap: "2px",
             alignItems: "flex-end",
+            marginLeft: "5px",
           }}
         >
           {board.staircase.map((row, rowIndex) => (
@@ -291,6 +293,7 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
             gridTemplateColumns: "repeat(5, 40px)",
             gap: "2px",
             alignSelf: "flex-start",
+            marginRight: "5px",
           }}
         >
           {board.wall.map((row, rowIndex) =>
@@ -333,8 +336,9 @@ const PlayerBoard: React.FC<PlayerBoardProps> = ({
           position: "relative",
           backgroundColor: COLORS.BUTTON_BG,
           flexWrap: "wrap",
-          maxWidth: "100%",
+          maxWidth: "calc(100% - 10px)",
           boxSizing: "border-box",
+          margin: "5px auto",
         }}
       >
         {board.floor.map((tile, index) => {
