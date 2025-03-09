@@ -78,10 +78,6 @@ const Game: React.FC = () => {
     }
   }, []); // Only run once on mount
 
-  useEffect(() => {
-    console.log("Game Phase:", GamePhase[gameState.phase]);
-  }, [gameState.phase]);
-
   const fillFactories = () => {
     setGameState(
       produce((draft) => {
@@ -134,7 +130,16 @@ const Game: React.FC = () => {
         draft.hasPlacedTile = false;
         draft.placedTilesThisTurn = [];
         draft.currentTileSource = null;
-        draft.currentPlayer = (draft.currentPlayer + 1) % 2;
+
+        // Check if the round is complete before changing the current player
+        if (
+          draft.factories.every((factory) => factory.length === 0) &&
+          draft.pot.length === 0
+        ) {
+          draft.phase = GamePhase.ReadyToWallTile;
+        } else {
+          draft.currentPlayer = (draft.currentPlayer + 1) % 2;
+        }
       })
     );
   };
@@ -534,7 +539,8 @@ const Game: React.FC = () => {
     );
   };
 
-  const calculateWallScore = (
+  // Calculate the score when placing a single new tile on the wall
+  const calculateTileScore = (
     wall: (Tile | null)[][],
     row: number,
     col: number
@@ -545,36 +551,59 @@ const Game: React.FC = () => {
 
     let horizontalLength = 1; // Count the tile itself
     let verticalLength = 1; // Count the tile itself
+    let hasHorizontalNeighbors = false;
+    let hasVerticalNeighbors = false;
 
-    // use two pointer method to expand left and right from the tile until we hit a non-matching tile or the edge of the wall
+    // use two pointer method to expand left and right from the tile until we hit a null tile
     let left = col - 1;
     let right = col + 1;
 
-    while (left >= 0 && wall[row][left]?.type === tileType) {
+    while (left >= 0 && wall[row][left]?.type) {
       horizontalLength++;
       left--;
     }
 
-    while (right < wall[row].length && wall[row][right]?.type === tileType) {
+    while (right < wall[row].length && wall[row][right]?.type) {
       horizontalLength++;
       right++;
     }
 
-    // use two pointer method to expand up and down from the tile until we hit a non-matching tile or the edge of the wall
+    // use two pointer method to expand up and down from the tile until we hit a null tile
     let up = row - 1;
     let down = row + 1;
 
-    while (up >= 0 && wall[up][col]?.type === tileType) {
+    while (up >= 0 && wall[up][col]?.type) {
       verticalLength++;
       up--;
     }
 
-    while (down < wall.length && wall[down][col]?.type === tileType) {
+    while (down < wall.length && wall[down][col]?.type) {
       verticalLength++;
       down++;
     }
 
-    score = horizontalLength + verticalLength;
+    if (horizontalLength > 1) {
+      hasHorizontalNeighbors = true;
+    }
+
+    if (verticalLength > 1) {
+      hasVerticalNeighbors = true;
+    }
+
+    if (!hasHorizontalNeighbors && !hasVerticalNeighbors) {
+      score = 1; // 1 point for a single tile
+    } else if (hasHorizontalNeighbors && hasVerticalNeighbors) {
+      // 1 point per contiguous tile in each direction
+      // (intentionally double-counts the tile itself)
+      score = horizontalLength + verticalLength;
+    } else if (hasHorizontalNeighbors) {
+      // 1 point per contiguous tile in the horizontal direction
+      score = horizontalLength;
+    } else if (hasVerticalNeighbors) {
+      // 1 point per contiguous tile in the vertical direction
+      score = verticalLength;
+    }
+
     return score;
   };
 
@@ -596,6 +625,8 @@ const Game: React.FC = () => {
         // Move to playing phase and prepare for next round
         draft.phase = GamePhase.Playing;
         draft.hasFirstPlayerBeenMoved = false;
+        // First player marker determines who goes first next round
+        draft.currentPlayer = draft.firstPlayerMarkerIndex;
       })
     );
   };
@@ -628,7 +659,7 @@ const Game: React.FC = () => {
               wallRow[wallColIndex] = { type: tileType };
 
               // Immediately calculate the score for that tile
-              player.score += calculateWallScore(
+              player.score += calculateTileScore(
                 player.wall,
                 rowIndex,
                 wallColIndex
@@ -650,7 +681,7 @@ const Game: React.FC = () => {
 
           // Apply floor penalties
           const floorPenalty = calculateFloorPenalty(player.floor);
-          player.score += Math.max(0, player.score + floorPenalty);
+          player.score = Math.max(0, player.score + floorPenalty);
 
           // Clear floor and move tiles to discard pile
           const floorTiles = player.floor.filter(
