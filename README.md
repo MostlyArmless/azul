@@ -32,6 +32,7 @@ Azul is a tile-drafting and pattern-building game where players compete to creat
    - You can't place tiles in a row if:
      - The row is already full
      - The row already contains different colored tiles
+     - The corresponding wall row already has that color
    - Any tiles you can't place go to your floor line
    - Once you start placing tiles, you must place all tiles of that color from your holding area
 
@@ -42,15 +43,28 @@ Azul is a tile-drafting and pattern-building game where players compete to creat
    - Any excess tiles go to your floor line
    - End your turn
 
-4. **Round End**
-   - A round ends when all factories and the pot are empty
-   - The bag is refilled with tiles from the pot if needed
+4. **Round End Scoring**
+   - When all factories and the pot are empty, the wall tiling phase begins
+   - For each complete row in the staircase:
+     - One tile moves to the matching color position in the wall
+     - Remaining tiles from that row go to the discard pile
+   - Points are scored for each newly placed tile:
+     - 1 point if the tile has no adjacent tiles
+     - For tiles with connections, score points equal to the length of each connected line (horizontal and vertical)
+     - A tile can score for both its horizontal and vertical connections
+   - Floor line penalties are applied (-1 to -3 points per tile)
+   - Floor tiles are moved to the discard pile
+
+5. **Prep for next round**
+   - The bag is refilled with tiles from the discard pile if needed
    - The player with the first player marker starts the next round
+   - Factories are refilled with 4 tiles each from the bag
 
 ### Scoring
-(Not yet implemented in current version)
-- Points are awarded for completing rows and creating patterns
-- Tiles in the floor line result in penalty points as shown (-1 to -3)
+- Points are awarded for each newly placed tile based on its connections
+- Tiles in the floor line result in penalty points (-1 to -3 per tile)
+- A player's score cannot go below 0
+- End-game scoring bonuses for completing rows, columns, and collecting all tiles of one color (not yet implemented)
 - The game ends when a player completes a horizontal row on their wall
 - The player with the highest score wins
 
@@ -58,3 +72,10 @@ Azul is a tile-drafting and pattern-building game where players compete to creat
 - Players can reset their turn using the reset button in their holding area
 - The game tracks the first player marker between rounds
 - Visual feedback shows the active player and available actions
+
+
+TODO:
+1. extract UI elements to their own components
+2. add a Settings component that will let us turn on/off the "test distribution" debug feature, and show/hide the Tile Bag and Discard Pile
+3. implement end-game scoring bonuses for rows, columns, and all-of-a-kinds
+4. add animations for the wall tiling phase and round scoring calculations
