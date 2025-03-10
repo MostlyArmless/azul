@@ -55,4 +55,7 @@ export interface GameState {
   placedTilesThisTurn: PlacedTile[];
   currentTileSource: TileSource | null;
   phase: GamePhase;
+  timestamp?: number; // Timestamp for tracking update order
+  actionId?: string; // Unique ID for tracking actions
+  isPriorityUpdate?: boolean; // Flag for priority updates like turn changes
 } 

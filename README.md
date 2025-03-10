@@ -1,6 +1,92 @@
-# Azul
+# Azul Board Game
 
-A digital implementation of the popular tile-placement board game Azul.
+A digital implementation of the popular board game Azul.
+
+## Multiplayer Support
+
+This game now supports multiplayer mode, allowing two players to play together over a local network.
+
+## How to Run
+
+### Development Mode
+
+To run the game in development mode with hot reloading:
+
+```bash
+# Install dependencies
+npm install
+
+# Run both client and server in development mode
+npm run dev:all
+```
+
+The game will be available at:
+- Client: http://localhost:5173
+- Server: http://localhost:3000
+
+#### Accessing from Other Devices (Development Mode)
+
+In development mode, other devices on your network need to access the Vite dev server:
+
+1. Find your computer's local IP address:
+   - On macOS/Linux: Run `ifconfig` in terminal
+   - On Windows: Run `ipconfig` in command prompt
+   
+2. Other devices can access the game at:
+   ```
+   http://YOUR_IP_ADDRESS:5173
+   ```
+   
+3. Make sure both the Vite dev server and the Socket.IO server are running.
+
+### Production Mode
+
+To build and run the game in production mode:
+
+```bash
+# Install dependencies
+npm install
+
+# Build and start the server
+npm run start
+```
+
+The game will be available at http://localhost:3000
+
+#### Accessing from Other Devices (Production Mode)
+
+In production mode, other devices can access the game directly through the Express server:
+
+```
+http://YOUR_IP_ADDRESS:3000
+```
+
+## How to Play Multiplayer
+
+1. Start the game using one of the methods above
+2. Open the game in your browser
+3. Click "Create New Room" to create a new game room
+4. Share the displayed room code with your opponent
+5. Have your opponent open the game and enter the room code to join
+
+Both players will now be connected to the same game session!
+
+## Troubleshooting
+
+If you encounter issues:
+
+1. **Cannot connect from other devices**: 
+   - Make sure your firewall allows connections to ports 5173 (dev) and 3000
+   - Verify you're using the correct IP address
+   - Ensure both devices are on the same network
+
+2. **Socket.IO connection issues**:
+   - Check browser console for errors
+   - Verify both the Vite dev server and Socket.IO server are running
+
+3. **"No such file or directory" error**:
+   - In development mode, make sure to access the Vite dev server (port 5173), not the Socket.IO server (port 3000)
+   - In production mode, run `npm run build` before starting the server
 
 ## Game Rules
 
@@ -79,3 +165,15 @@ TODO:
 2. add a Settings component that will let us turn on/off the "test distribution" debug feature, and show/hide the Tile Bag and Discard Pile
 3. implement end-game scoring bonuses for rows, columns, and all-of-a-kinds
 4. add animations for the wall tiling phase and round scoring calculations
+
+## Technologies Used
+
+- React
+- TypeScript
+- Vite
+- Socket.IO for real-time multiplayer
+- Express for the server
+
+## License
+
+[Your license information]
